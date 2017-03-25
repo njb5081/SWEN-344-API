@@ -300,7 +300,7 @@ function postCourse()
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBook", "createBook");
+	$possible_function_url = array("createBook", "updateBook", "getBook", "getSectionBook");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
