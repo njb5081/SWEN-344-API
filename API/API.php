@@ -307,23 +307,23 @@ function book_store_switch()
 		switch ($_GET["function"])
 		{
 			case "createBook":
-				if (isset($_GET["isbn"]) &&
-					isset($_GET["title"]) &&
-					isset($_GET["publisher_id"]) &&
-					isset($_GET["price"]) &&
-					isset($_GET["thumbnail_url"]) &&
-					isset($_GET["available"]) &&
-					isset($_GET["count"]) 
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["title"]) &&
+					isset($_POST["publisher_id"]) &&
+					isset($_POST["price"]) &&
+					isset($_POST["thumbnail_url"]) &&
+					isset($_POST["available"]) &&
+					isset($_POST["count"]) 
 				)
 					{	
 					return createBook(
-						$_GET["isbn"], 
-						$_GET["title"],
-						$_GET["publisher_id"],
-						$_GET["price"],
-						$_GET["thumbnail_url"],
-						$_GET["available"],
-						$_GET["count"]
+						$_POST["isbn"], 
+						$_POST["title"],
+						$_POST["publisher_id"],
+						$_POST["price"],
+						$_POST["thumbnail_url"],
+						$_POST["available"],
+						$_POST["count"]
 						);
 					}
 				else{
