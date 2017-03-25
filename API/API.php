@@ -330,6 +330,27 @@ function book_store_switch()
 					logError("createBook ~ Required parameters were not submited correctly.");
 					return ("One or more parameters were not provided");
 				}
+			case "updateBook":
+				if (isset($_GET["isbn"]) &&
+					isset($_GET["title"]) &&
+					isset($_GET["publisher_id"]) &&
+					isset($_GET["price"]) &&
+					isset($_GET["thumbnail_url"]) &&
+					isset($_GET["available"]) &&
+					isset($_GET["count"]))
+					{
+					// return updateBook(
+					// 	$_POST["isbn"],
+					// 	$_POST["title"], 
+					// 	$_POST["publisher_id"], 
+					// 	$_POST["price"],
+					// 	$_POST["thumbnail_url"], 
+					// 	$_POST["available"], 
+					// 	$_POST["count"]);
+					} else {
+						logError("updateBook ~ Required parameters were not submitted correctly.");
+						return ("One or more book parameters for updating this book were not provided.");
+					}
 			case "getBook":
 				// if has params
 				return getBook();
@@ -338,11 +359,6 @@ function book_store_switch()
 			case "getSectionBook":
 				// if has params
 				return getSectionBook();
-				// else
-				// return "Missing " . $_GET["param-name"]
-			case "postBook":
-				// if has params
-				return postBook();
 				// else
 				// return "Missing " . $_GET["param-name"]
 		}
@@ -380,17 +396,18 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			logError($exception);
 	}
 }
+
+function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
+{
+	return "TODO";
+}
+
 function getBook()
 {
 	return "TODO";
 }
 
 function getSectionBook()
-{
-	return "TODO";
-}
-
-function postBook()
 {
 	return "TODO";
 }
