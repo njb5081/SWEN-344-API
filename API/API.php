@@ -375,14 +375,11 @@ function book_store_switch()
 //Define Functions Here
 function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
+	echo $isbn;
 	try 
 		{
-			echo $isbn;
-			echo $title;
-			//$databaseFile
-			// echo $GLOBALS["databaseFile"];
-			$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db");
-			// $sqlite = new SQLite3($GLOBALS["databaseFile"]);
+			$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db"); 
+		
 			$sqlite->enableExceptions(true);
 			
 			//prepare query to protect from sql injection
@@ -398,6 +395,8 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$query->bindParam(':available', $available);
 			$query->bindParam(':count', $count);
 			$result = $query->execute();
+			logError("HERE");
+			return $result;
 		}
 		catch (Exception $exception)
 		{
