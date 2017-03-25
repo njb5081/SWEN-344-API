@@ -300,12 +300,36 @@ function postCourse()
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBook", "postBook");
+	$possible_function_url = array("getBook", "getSectionBook", "createBook");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
 		switch ($_GET["function"])
 		{
+			case "createBook":
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["title"]) &&
+					isset($_POST["publisher_id"]) &&
+					isset($_POST["price"]) &&
+					isset($_POST["thumbnail_url"]) &&
+					isset($_POST["available"]) &&
+					isset($_POST["count"]) 
+				)
+					{	
+					return createBook(
+						$_POST["isbn"], 
+						$_POST["title"],
+						$_POST["publisher_id"],
+						$_POST["price"],
+						$_POST["thumbnail_url"],
+						$_POST["available"],
+						$_POST["count"]
+						);
+					}
+				else{
+					logError("createBook ~ Required parameters were not submited correctly.");
+					return ("One or more parameters were not provided");
+				}
 			case "updateBook":
 				if (isset($_GET["isbn"]) &&
 					isset($_GET["title"]) &&
@@ -342,6 +366,36 @@ function book_store_switch()
 }
 
 //Define Functions Here
+function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
+{
+	try 
+		{
+			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+			$sqlite->enableExceptions(true);
+			
+			//prepare query to protect from sql injection
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by, 
+						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
+							:price, :thumbnail_url, :available, :count");
+							
+			$query->bindParam(':isbn', $isbn);
+			$query->bindParam(':title', $title);
+			$query->bindParam(':publisher_id', $publisher_id);
+			$query->bindParam(':thumbnail_url', $thumbnail_url);
+			$query->bindParam(':price', $price);
+			$query->bindParam(':available', $available);
+			$query->bindParam(':count', $count);
+			$result = $query->execute();
+		}
+		catch (Exception $exception)
+		{
+			if ($GLOBALS ["sqliteDebug"]) 
+			{
+				return $exception->getMessage();
+			}
+			logError($exception);
+	}
+}
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
