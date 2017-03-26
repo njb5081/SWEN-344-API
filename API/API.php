@@ -300,7 +300,7 @@ function postCourse()
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBook", "createBook");
+	$possible_function_url = array("createBook", "updateBook", "getBook", "getSectionBook");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -331,13 +331,13 @@ function book_store_switch()
 					return ("One or more parameters were not provided");
 				}
 			case "updateBook":
-				if (isset($_GET["isbn"]) &&
-					isset($_GET["title"]) &&
-					isset($_GET["publisher_id"]) &&
-					isset($_GET["price"]) &&
-					isset($_GET["thumbnail_url"]) &&
-					isset($_GET["available"]) &&
-					isset($_GET["count"]))
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["title"]) &&
+					isset($_POST["publisher_id"]) &&
+					isset($_POST["price"]) &&
+					isset($_POST["thumbnail_url"]) &&
+					isset($_POST["available"]) &&
+					isset($_POST["count"]))
 					{
 					return updateBook(
 						$_POST["isbn"],
@@ -378,8 +378,6 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 	echo $isbn;
 	try 
 		{
-			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
-
 			$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db"); 
 		
 			$sqlite->enableExceptions(true);
@@ -414,12 +412,13 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 {
 	try 
 		{
+			logError("Hello update book method!!!!!");
 			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 			$sqlite->enableExceptions(true);
 			
 			//prepare query to protect from sql injection
-			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by, 
-						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, publisher_id, 
+						price, thumbnail_url, available, count) VALUES (:isbn, :title, :publisher_id,
 							:price, :thumbnail_url, :available, :count");
 							
 			$query->bindParam(':isbn', $isbn);
