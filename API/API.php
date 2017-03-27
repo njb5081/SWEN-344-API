@@ -85,7 +85,7 @@ function general_switch()
 					else 
 					{
 						logError("createUser ~ Required parameters were not submit correctly.");
-						return ("One or more parameters were not provided");
+						return ("createUser One or more parameters were not provided");
 					}
 		}
 	}
@@ -307,12 +307,12 @@ function book_store_switch()
 		switch ($_GET["function"])
 		{
 			case "createBook":
-				if (isset($_POST["name"])){
-					$pid = findOrCreatePublisher($_POST["name"], $_POST["address"], $_POST["website"]);
+				if (isset($_POST["publisher_name"])){
+					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
 				}
 				else{
 					logError("createBook ~ Required parameters were not submited correctly.");
-					return ("One or more parameters were not provided");
+					return ("findOrCreatePublisher One or more parameters were not provided");
 				}
 				if (isset($_POST["isbn"]) &&
 					isset($_POST["title"]) &&
@@ -334,12 +334,12 @@ function book_store_switch()
 					}
 				else{
 					logError("createBook ~ Required parameters were not submited correctly.");
-					return ("One or more parameters were not provided");
+					return ("createBook One or more parameters were not provided");
 				}
 			case "findOrCreatePublisher":
 				logError("log or create pub case");
-				if (isset($_POST["name"])){
-					$pid = findOrCreatePublisher($_POST["name"], $_POST["address"], $_POST["website"]);
+				if (isset($_POST["publisher_name"])){
+					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
 					return $pid;
 				}
 			case "updateBook":
