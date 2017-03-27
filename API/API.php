@@ -84,7 +84,7 @@ function general_switch()
 					else 
 					{
 						logError("createUser ~ Required parameters were not submit correctly.");
-						return ("One or more parameters were not provided");
+						return ("createUser One or more parameters were not provided");
 					}
 		}
 	}
@@ -297,7 +297,6 @@ function postCourse()
 
 // Switchboard to Book Store Functions
 require("Bookstore.php");
-
 
 ///////////////////
 //Human Resources//
