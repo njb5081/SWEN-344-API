@@ -300,7 +300,7 @@ function postCourse()
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBook", "createBook", "findOrCreatePublisher");
+	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -372,10 +372,10 @@ function book_store_switch()
 					return ("getBook book isbn parameter was not submitted correctly.");
 				}
 				// return "Missing " . $_GET["param-name"]
-			case "getSectionBook":
+			case "getSectionBooks":
 				//if has params
-				if (isset($_GET["isbn"]) && isset($_GET["section_id"])){
-					return getSectionBook($_GET["isbn"], $_GET["section_id"]);
+				if (isset($_GET["section_id"])){
+					return getSectionBooks($_GET["section_id"]);
 				} else {
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
@@ -456,9 +456,9 @@ function findOrCreatePublisher($name, $address, $website){
 		}
 		logError($exception);
 	}
-
 	return $pub_id[0];
 }
+
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
 	try 
@@ -491,12 +491,12 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 	return "TODO";
 }
 
-function getBook()
+function getBook($isbn)
 {
 	return "TODO";
 }
 
-function getSectionBook()
+function getSectionBooks($section_id)
 {
 	return "TODO";
 }
