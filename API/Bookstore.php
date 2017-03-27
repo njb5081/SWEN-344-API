@@ -96,7 +96,7 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 		{
 			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 
-			$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db"); 
+			$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
 		
 			$sqlite->enableExceptions(true);
 			
@@ -128,7 +128,7 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 function findOrCreatePublisher($name, $address, $website){
 	logError("findorcreate ");
 	try{
-		$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db"); 
+		$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
 		
 		$sqlite->enableExceptions(true);
 		$pub_query = $sqlite->prepare("Select id from publisher where name=:name");
