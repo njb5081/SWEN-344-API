@@ -300,7 +300,7 @@ function postCourse()
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "updateBook");
+	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -343,13 +343,13 @@ function book_store_switch()
 					return $pid;
 				}
 			case "updateBook":
-				if (isset($_POST["isbn"]) &&
-					isset($_POST["title"]) &&
-					isset($_POST["publisher_id"]) &&
-					isset($_POST["price"]) &&
-					isset($_POST["thumbnail_url"]) &&
-					isset($_POST["available"]) &&
-					isset($_POST["count"]))
+				if (isset($_GET["isbn"]) &&
+					isset($_GET["title"]) &&
+					isset($_GET["publisher_id"]) &&
+					isset($_GET["price"]) &&
+					isset($_GET["thumbnail_url"]) &&
+					isset($_GET["available"]) &&
+					isset($_GET["count"]))
 					{
 					return updateBook(
 						$_POST["isbn"],
@@ -374,8 +374,8 @@ function book_store_switch()
 				// return "Missing " . $_GET["param-name"]
 			case "getSectionBooks":
 				//if has params
-				if (isset($_GET["isbn"]) && isset($_GET["section_id"])){
-					return getSectionBooks($_GET["isbn"], $_GET["section_id"]);
+				if (isset($_GET["section_id"])){
+					return getSectionBooks($_GET["section_id"]);
 				} else {
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
@@ -467,9 +467,9 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$sqlite->enableExceptions(true);
 			
 			//prepare query to protect from sql injection
-			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, publisher_id, 
-						price, thumbnail_url, available, count) VALUES (:isbn, :title, :publisher_id,
-							:price, :thumbnail_url, :available, :count");
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by, 
+						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
+							:price, :thumbnail_url, :available, :count)");
 							
 			$query->bindParam(':isbn', $isbn);
 			$query->bindParam(':title', $title);
