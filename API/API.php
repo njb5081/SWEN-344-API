@@ -351,28 +351,35 @@ function book_store_switch()
 					isset($_GET["available"]) &&
 					isset($_GET["count"]))
 					{
-					// return updateBook(
-					// 	$_POST["isbn"],
-					// 	$_POST["title"], 
-					// 	$_POST["publisher_id"], 
-					// 	$_POST["price"],
-					// 	$_POST["thumbnail_url"], 
-					// 	$_POST["available"], 
-					// 	$_POST["count"]);
+					return updateBook(
+						$_POST["isbn"],
+						$_POST["title"], 
+						$_POST["publisher_id"], 
+						$_POST["price"],
+						$_POST["thumbnail_url"], 
+						$_POST["available"], 
+						$_POST["count"]);
 					} else {
 						logError("updateBook ~ Required parameters were not submitted correctly.");
 						return ("One or more book parameters for updating this book were not provided.");
 					}
 			case "getBook":
-				// if has params
-				return getBook();
-				// else
+				//if has params
+				if (isset($_GET["isbn"])){
+					return getBook($_GET["isbn"]);
+				} else {
+					logError("getBook ~ Required isbn parameter was not submitted correctly.");
+					return ("getBook book isbn parameter was not submitted correctly.");
+				}
 				// return "Missing " . $_GET["param-name"]
 			case "getSectionBook":
-				// if has params
-				return getSectionBook();
-				// else
-				// return "Missing " . $_GET["param-name"]
+				//if has params
+				if (isset($_GET["isbn"]) && isset($_GET["section_id"])){
+					return getSectionBook($_GET["isbn"], $_GET["section_id"]);
+				} else {
+					logError("getBook ~ Required isbn parameter was not submitted correctly.");
+					return ("getBook book isbn parameter was not submitted correctly.");
+				}
 		}
 	}
 }
@@ -453,6 +460,33 @@ function findOrCreatePublisher($name, $address, $website){
 }
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
+	try 
+		{
+			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+			$sqlite->enableExceptions(true);
+			
+			//prepare query to protect from sql injection
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by, 
+						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
+							:price, :thumbnail_url, :available, :count)");
+							
+			$query->bindParam(':isbn', $isbn);
+			$query->bindParam(':title', $title);
+			$query->bindParam(':publisher_id', $publisher_id);
+			$query->bindParam(':thumbnail_url', $thumbnail_url);
+			$query->bindParam(':price', $price);
+			$query->bindParam(':available', $available);
+			$query->bindParam(':count', $count);
+			$result = $query->execute();
+		}
+		catch (Exception $exception)
+		{
+			if ($GLOBALS ["sqliteDebug"]) 
+			{
+				return $exception->getMessage();
+			}
+			logError($exception);
+	}
 	return "TODO";
 }
 
