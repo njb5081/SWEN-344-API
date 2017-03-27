@@ -456,6 +456,7 @@ function findOrCreatePublisher($name, $address, $website){
 		}
 		logError($exception);
 	}
+
 	return $pub_id[0];
 }
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
