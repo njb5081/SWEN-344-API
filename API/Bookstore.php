@@ -3,7 +3,7 @@
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook");
+	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook", "createReview");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -22,11 +22,11 @@ function book_store_switch()
 					isset($_POST["price"]) &&
 					isset($_POST["thumbnail_url"]) &&
 					isset($_POST["available"]) &&
-					isset($_POST["count"]) 
+					isset($_POST["count"])
 				)
-					{	
+					{
 					return createBook(
-						$_POST["isbn"], 
+						$_POST["isbn"],
 						$_POST["title"],
 						$pid,
 						$_POST["price"],
@@ -56,11 +56,11 @@ function book_store_switch()
 					{
 					return updateBook(
 						$_POST["isbn"],
-						$_POST["title"], 
-						$_POST["publisher_id"], 
+						$_POST["title"],
+						$_POST["publisher_id"],
 						$_POST["price"],
-						$_POST["thumbnail_url"], 
-						$_POST["available"], 
+						$_POST["thumbnail_url"],
+						$_POST["available"],
 						$_POST["count"]);
 					} else {
 						logError("updateBook ~ Required parameters were not submitted correctly.");
@@ -83,15 +83,30 @@ function book_store_switch()
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
 				}
-            case "toggleBook":
-                if (isset($_GET["isbn"]) && isset($_GET["available"]))
-                {
-                    return toggleBook($_GET["isbn"], $_GET["available"]);
-                }
-                else{
-                    logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
-                    return ("toggleBook isbn and-or available parameter not submitted correctly.");
-                }
+      case "toggleBook":
+          if (isset($_GET["isbn"]) && isset($_GET["available"]))
+          {
+              return toggleBook($_GET["isbn"], $_GET["available"]);
+          }
+          else{
+              logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
+              return ("toggleBook isbn and-or available parameter not submitted correctly.");
+          }
+			case "createReview":
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["review"]) &&
+					isset($_POST["rating"]) &&
+					isset($_POST["user_id"]))
+					{
+					return createReview(
+						$_POST["isbn"],
+						$_POST["review"],
+						$_POST["rating"],
+						$_POST["user_id"]);
+				} else {
+					logError("createReview ~ Required parameters not submitted correctly.")
+					return ("createReview parameters not submitted correctly.")
+				}
 		}
 	}
 }
@@ -101,19 +116,19 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 {
 	logError("createBook ");
 
-	try 
+	try
 		{
 			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 
-			$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
-		
+			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
+
 			$sqlite->enableExceptions(true);
-			
+
 			//prepare query to protect from sql injection
-			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, publisher_id, 
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, publisher_id,
 						price, thumbnail_url, available, count) VALUES (:isbn, :title, :publisher_id,
 							:price, :thumbnail_url, :available, :count)");
-							
+
 			$query->bindParam(':isbn', $isbn);
 			$query->bindParam(':title', $title);
 			$query->bindParam(':publisher_id', $publisher_id);
@@ -126,7 +141,7 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 	}
 	catch (Exception $exception)
 	{
-		if ($GLOBALS ["sqliteDebug"]) 
+		if ($GLOBALS ["sqliteDebug"])
 		{
 			return $exception->getMessage();
 		}
@@ -137,8 +152,8 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 function findOrCreatePublisher($name, $address, $website){
 	logError("findorcreate ");
 	try{
-		$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
-		
+		$sqlite = new SQLite3($GLOBALS["databaseFile"]);
+
 		$sqlite->enableExceptions(true);
 		$pub_query = $sqlite->prepare("Select id from publisher where name=:name");
 		$pub_query->bindParam(":name", $name);	//possible duplicate
@@ -148,7 +163,7 @@ function findOrCreatePublisher($name, $address, $website){
 		logError($pub_id[0]);
 		if (empty($pub_id)){
 			logError("inside if statement");
-			$pub_query = $sqlite->prepare("INSERT INTO Publisher (name, address, website) 
+			$pub_query = $sqlite->prepare("INSERT INTO Publisher (name, address, website)
 				VALUES (:name, :address, :website)");
 			$pub_query->bindParam(':name', $name);
 			$pub_query->bindParam(':address', $address);
@@ -156,13 +171,13 @@ function findOrCreatePublisher($name, $address, $website){
 			$pub_query->execute();
 			$pub_query = $sqlite->prepare("Select id from publisher where name=:name");
 			$publisher_id = $pub_query->execute();
-			$pub_id = $publisher_id->fetchArray();			
+			$pub_id = $publisher_id->fetchArray();
 		}
-		
+
 	}
 	catch (Exception $exception)
 	{
-		if ($GLOBALS ["sqliteDebug"]) 
+		if ($GLOBALS ["sqliteDebug"])
 		{
 			return $exception->getMessage();
 		}
@@ -173,16 +188,16 @@ function findOrCreatePublisher($name, $address, $website){
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
-	try 
+	try
 		{
 			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 			$sqlite->enableExceptions(true);
-			
+
 			//prepare query to protect from sql injection
-			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by, 
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by,
 						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
 							:price, :thumbnail_url, :available, :count)");
-							
+
 			$query->bindParam(':isbn', $isbn);
 			$query->bindParam(':title', $title);
 			$query->bindParam(':publisher_id', $publisher_id);
@@ -194,7 +209,7 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 		}
 		catch (Exception $exception)
 		{
-			if ($GLOBALS ["sqliteDebug"]) 
+			if ($GLOBALS ["sqliteDebug"])
 			{
 				return $exception->getMessage();
 			}
@@ -224,7 +239,7 @@ function toggleBook($isbn, $isAvailable)
         $sqlite->enableExceptions(true);
 
         //prepare query to protect from sql injection
-        $query = $sqlite->prepare("UPDATE Book SET available = :newState 
+        $query = $sqlite->prepare("UPDATE Book SET available = :newState
                   WHERE isbn= :isbn");
 
         $query->bindParam(':isbn', $isbn);
@@ -241,6 +256,10 @@ function toggleBook($isbn, $isAvailable)
         }
         logError($exception);
     }
+}
+function createReview($isbn, $review, $rating, $user_id)
+{
+	return "TODO";
 }
 
 
