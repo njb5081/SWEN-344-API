@@ -3,7 +3,8 @@
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook");
+	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
+		"orderBook");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -91,6 +92,15 @@ function book_store_switch()
                 else{
                     logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
                     return ("toggleBook isbn and-or available parameter not submitted correctly.");
+                }
+			case "orderBook":
+                if (isset($_GET["isbn"]) && isset($_GET["amount"]))
+                {
+                    return orderBook($_GET["isbn"], $_GET["amount"]);
+                }
+                else{
+                    logError("orderBook ~ Required isbn and-or amount parameter not submitted correctly.");
+                    return ("orderBook isbn and-or amount parameter not submitted correctly.");
                 }
 		}
 	}
@@ -241,6 +251,37 @@ function toggleBook($isbn, $isAvailable)
         }
         logError($exception);
     }
+}
+
+function orderBook($isbn, $amount)
+{
+	logError("orderBook ");
+	try
+    {
+        $sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+        $sqlite->enableExceptions(true);
+
+        //prepare query to protect from sql injection
+		$count_query = $sqlite->prepare("Select count from Book where isbn=:isbn;");
+		$count_query->bindParam(':isbn', $isbn);
+		$count_result = $count_query->execute();
+		$count = $count_result->fetchArray();
+		$total = $count[0] + $amount;		
+        $query = $sqlite->prepare("UPDATE Book SET count=:total WHERE isbn=:isbn;");
+		$query->bindParam(':total', $total);  //update statement not working for some reason
+        $result = $query->execute();
+
+        return $total;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
+	
 }
 
 
