@@ -215,7 +215,27 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 
 function getBook($isbn)
 {
-	return "TODO";
+	logError("findorcreate ");
+	try
+	{
+		$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
+		
+		$sqlite->enableExceptions(true);
+		$book_query = $sqlite->prepare("Select * from book where isbn=:isbn;");
+		$book_query->bindParam(':isbn', $isbn);	
+		//need to get everything out of the dict
+		$result = $book_query->execute();
+		$book_result = $result->fetchArray();
+	}
+	catch (Exception $exception)
+	{
+		if ($GLOBALS ["sqliteDebug"]) 
+		{
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
+	return $book_result;
 }
 
 function getSectionBooks($section_id)
