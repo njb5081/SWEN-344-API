@@ -3,7 +3,7 @@
 function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
-	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher");
+	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -83,6 +83,15 @@ function book_store_switch()
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
 				}
+            case "toggleBook":
+                if (isset($_GET["isbn"]) && isset($_GET["available"]))
+                {
+                    return toggleBook($_GET["isbn"], $_GET["available"]);
+                }
+                else{
+                    logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
+                    return ("toggleBook isbn and-or available parameter not submitted correctly.");
+                }
 		}
 	}
 }
@@ -203,4 +212,36 @@ function getSectionBooks($section_id)
 {
 	return "TODO";
 }
+
+/* Change a book from available to customers to unavailable and vice versa */
+function toggleBook($isbn, $isAvailable)
+{
+    // assert current state is 1 or 0
+    $newState = ($isAvailable == 1 ? 0 : 1);
+    try
+    {
+        $sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+        $sqlite->enableExceptions(true);
+
+        //prepare query to protect from sql injection
+        $query = $sqlite->prepare("UPDATE Book SET available = :newState 
+                  WHERE isbn= :isbn");
+
+        $query->bindParam(':isbn', $isbn);
+        $query->bindParam(':newState', $newState);
+        $result = $query->execute();
+
+        return $result;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
+}
+
+
 ?>
