@@ -30,11 +30,11 @@ function general_switch()
 			case "test":
 				return APITest();
 			case "login":
-				if (isset($_POST["username"]) && isset($_POST["password"])) 
+				if (isset($_POST["username"]) && isset($_POST["password"]))
 				{
 					return login($_POST["username"], $_POST["password"]);
 				}
-				else 
+				else
 				{
 					logError("loginValid ~ Required parameters were not submit correctly.");
 					return FALSE;
@@ -77,14 +77,14 @@ function general_switch()
 					isset($_POST["email"])
 					)
 					{
-						return createUser($_POST["username"], 
-							$_POST["password"], 
+						return createUser($_POST["username"],
+							$_POST["password"],
 							$_POST["fname"],
 							$_POST["lname"],
 							$_POST["email"]
 							);
 					}
-					else 
+					else
 					{
 						logError("createUser ~ Required parameters were not submit correctly.");
 						return ("createUser One or more parameters were not provided");
@@ -92,7 +92,7 @@ function general_switch()
 		}
 	}
 }
-	
+
 function APITest()
 {
 	return "API Connection Success!";
@@ -100,14 +100,14 @@ function APITest()
 
 function logError($message)
 {
-	try 
+	try
 	{
 		$myfile = fopen($GLOBALS ["errorLogFile"], "a");
 		fwrite($myfile, ($message . "\n"));
 		fclose($myfile);
 	}
 	catch (Exception $exception)
-	{ 
+	{
 		//what should happen if this fails???
 	}
 }
@@ -124,51 +124,51 @@ function encrypt($string)
 function createUser($username, $password, $fname, $lname, $email, $role)
 {
 	$success = FALSE;
-	
+
 	try
 	{
 		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 		$sqlite->enableExceptions(true);
-		
+
 		//first check if the username already exists
 		$query = $sqlite->prepare("SELECT * FROM User WHERE USERNAME=:username");
-		$query->bindParam(':username', $username);		
+		$query->bindParam(':username', $username);
 		$result = $query->execute();
-		
-		if ($record = $result->fetchArray()) 
+
+		if ($record = $result->fetchArray())
 		{
 			return "Username Already Exists";
 		}
-		
+
 		//for varaible reuse
 		$result->finalize();
-		
+
 		$query1 = $sqlite->prepare("INSERT INTO User (USERNAME, PASSWORD, FIRSTNAME, LASTNAME, EMAIL, ROLE) VALUES (:username, :password, :fname, :lname, :email, :role)");
-		
-		$query1->bindParam(':username', $username);		
-		$query1->bindParam(':password', encrypt($password));	
-		$query1->bindParam(':fname', $fname);	
+
+		$query1->bindParam(':username', $username);
+		$query1->bindParam(':password', encrypt($password));
+		$query1->bindParam(':fname', $fname);
 		$query1->bindParam(':lname', $lname);
 		$query1->bindParam(':email', $email);
 		$query1->bindParam(':role', $role);
-		
-		$query1->execute();	
-		
+
+		$query1->execute();
+
 		// clean up any objects
 		$sqlite->close();
-		
+
 		//if it gets here without throwing an error, assume success = true;
 		$success = TRUE;
 	}
 	catch (Exception $exception)
 	{
-		if ($GLOBALS ["sqliteDebug"]) 
+		if ($GLOBALS ["sqliteDebug"])
 		{
 			return $exception->getMessage();
 		}
 		logError($exception);
 	}
-	
+
 	return $success;
 }
 
@@ -176,41 +176,41 @@ function login($username, $password)
 {
 	if (loginValid($username, $password))
 	{
-		try 
+		try
 		{
 			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 			$sqlite->enableExceptions(true);
-			
+
 			//prepare query to protect from sql injection
 			$query = $sqlite->prepare("SELECT * FROM User WHERE USERNAME=:username");
-			$query->bindParam(':username', $username);		
+			$query->bindParam(':username', $username);
 			$result = $query->execute();
-			
-			
+
+
 			//$sqliteResult = $sqlite->query($queryString);
-			
+
 			return $result;
-			
-			if ($record = $result->fetchArray(SQLITE3_ASSOC)) 
+
+			if ($record = $result->fetchArray(SQLITE3_ASSOC))
 			{
 				return $record;
 			}
-		
+
 			$result->finalize();
-			
+
 			// clean up any objects
 			$sqlite->close();
 		}
 		catch (Exception $exception)
 		{
-			if ($GLOBALS ["sqliteDebug"]) 
+			if ($GLOBALS ["sqliteDebug"])
 			{
 				return $exception->getMessage();
 			}
 			logError($exception);
 		}
 	}
-	else 
+	else
 	{
 		return null;
 	}
@@ -222,41 +222,41 @@ function loginValid($username, $password)
 {
 	$valid = FALSE;
 	//return $GLOBALS ["databaseFile"];
-	try 
+	try
 	{
 		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 		$sqlite->enableExceptions(true);
-		
+
 		//prepare query to protect from sql injection
 		$query = $sqlite->prepare("SELECT * FROM User WHERE USERNAME=:username");
-		$query->bindParam(':username', $username);		
+		$query->bindParam(':username', $username);
 		$result = $query->execute();
-		
-		
+
+
 		//$sqliteResult = $sqlite->query($queryString);
 
-		if ($record = $result->fetchArray()) 
+		if ($record = $result->fetchArray())
 		{
 			if (password_verify($password, $record['PASSWORD']))
 			{
 				$valid = TRUE;
 			}
 		}
-	
+
 		$result->finalize();
-		
+
 		// clean up any objects
 		$sqlite->close();
 	}
 	catch (Exception $exception)
 	{
-		if ($GLOBALS ["sqliteDebug"]) 
+		if ($GLOBALS ["sqliteDebug"])
 		{
 			return $exception->getMessage();
 		}
 		logError($exception);
 	}
-	
+
 	return $valid;
 }
 
@@ -301,6 +301,229 @@ function postCourse()
 // Switchboard to Book Store Functions
 require("Bookstore.php");
 
+function book_store_switch()
+{
+	// Define the possible Book Store function URLs which the page can be accessed from
+	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher");
+
+	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
+	{
+		switch ($_GET["function"])
+		{
+			case "createBook":
+				if (isset($_POST["name"])){
+					$pid = findOrCreatePublisher($_POST["name"], $_POST["address"], $_POST["website"]);
+				}
+				else{
+					logError("createBook ~ Required parameters were not submited correctly.");
+					return ("One or more parameters were not provided");
+				}
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["title"]) &&
+					isset($_POST["price"]) &&
+					isset($_POST["thumbnail_url"]) &&
+					isset($_POST["available"]) &&
+					isset($_POST["count"])
+				)
+					{
+					return createBook(
+						$_POST["isbn"],
+						$_POST["title"],
+						$pid,
+						$_POST["price"],
+						$_POST["thumbnail_url"],
+						$_POST["available"],
+						$_POST["count"]
+						);
+					}
+				else{
+					logError("createBook ~ Required parameters were not submited correctly.");
+					return ("One or more parameters were not provided");
+				}
+			case "findOrCreatePublisher":
+				logError("log or create pub case");
+				if (isset($_POST["name"])){
+					$pid = findOrCreatePublisher($_POST["name"], $_POST["address"], $_POST["website"]);
+					return $pid;
+				}
+			case "updateBook":
+				if (isset($_GET["isbn"]) &&
+					isset($_GET["title"]) &&
+					isset($_GET["publisher_id"]) &&
+					isset($_GET["price"]) &&
+					isset($_GET["thumbnail_url"]) &&
+					isset($_GET["available"]) &&
+					isset($_GET["count"]))
+					{
+					return updateBook(
+						$_POST["isbn"],
+						$_POST["title"],
+						$_POST["publisher_id"],
+						$_POST["price"],
+						$_POST["thumbnail_url"],
+						$_POST["available"],
+						$_POST["count"]);
+					} else {
+						logError("updateBook ~ Required parameters were not submitted correctly.");
+						return ("One or more book parameters for updating this book were not provided.");
+					}
+			case "getBook":
+				//if has params
+				if (isset($_GET["isbn"])){
+					return getBook($_GET["isbn"]);
+				} else {
+					logError("getBook ~ Required isbn parameter was not submitted correctly.");
+					return ("getBook book isbn parameter was not submitted correctly.");
+				}
+				// return "Missing " . $_GET["param-name"]
+			case "getSectionBooks":
+				//if has params
+				if (isset($_GET["section_id"])){
+					return getSectionBooks($_GET["section_id"]);
+				} else {
+					logError("getBook ~ Required isbn parameter was not submitted correctly.");
+					return ("getBook book isbn parameter was not submitted correctly.");
+				}
+			case "createReview":
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["review"]) &&
+					isset($_POST["rating"]) &&
+					isset($_POST["user_id"]))
+					{
+					return createReview(
+						$_POST["isbn"],
+						$_POST["review"],
+						$_POST["rating"],
+						$_POST["user_id"]);
+				} else {
+					logError("createReview ~ Required parameters not submitted correctly.")
+					return ("createReview parameters not submitted correctly.")
+				}
+		}
+	}
+}
+
+//Define Functions Here
+function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
+{
+	logError("createBook ");
+
+	try
+		{
+			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+
+			$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db");
+
+			$sqlite->enableExceptions(true);
+
+			//prepare query to protect from sql injection
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, publisher_id,
+						price, thumbnail_url, available, count) VALUES (:isbn, :title, :publisher_id,
+							:price, :thumbnail_url, :available, :count)");
+
+			$query->bindParam(':isbn', $isbn);
+			$query->bindParam(':title', $title);
+			$query->bindParam(':publisher_id', $publisher_id);
+			$query->bindParam(':thumbnail_url', $thumbnail_url);
+			$query->bindParam(':price', $price);
+			$query->bindParam(':available', $available);
+			$query->bindParam(':count', $count);
+			$result = $query->execute();
+			return $result;
+	}
+	catch (Exception $exception)
+	{
+		if ($GLOBALS ["sqliteDebug"])
+		{
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
+}
+
+function findOrCreatePublisher($name, $address, $website){
+	logError("findorcreate ");
+	try{
+		$sqlite = new SQLite3(__DIR__.DIRECTORY_SEPARATOR."SWEN344DB.db");
+
+		$sqlite->enableExceptions(true);
+		$pub_query = $sqlite->prepare("Select id from publisher where name=:name");
+		$pub_query->bindParam(":name", $name);	//possible duplicate
+		$publisher_id = $pub_query->execute();
+		logError('outside of if statemet');
+		$pub_id = $publisher_id->fetchArray();
+		logError($pub_id[0]);
+		if (empty($pub_id)){
+			logError("inside if statement");
+			$pub_query = $sqlite->prepare("INSERT INTO Publisher (name, address, website)
+				VALUES (:name, :address, :website)");
+			$pub_query->bindParam(':name', $name);
+			$pub_query->bindParam(':address', $address);
+			$pub_query->bindParam(':website', $website);
+			$pub_query->execute();
+			$pub_query = $sqlite->prepare("Select id from publisher where name=:name");
+			$publisher_id = $pub_query->execute();
+			$pub_id = $publisher_id->fetchArray();
+		}
+
+	}
+	catch (Exception $exception)
+	{
+		if ($GLOBALS ["sqliteDebug"])
+		{
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
+	return $pub_id[0];
+}
+
+function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
+{
+	try
+		{
+			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+			$sqlite->enableExceptions(true);
+
+			//prepare query to protect from sql injection
+			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by,
+						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
+							:price, :thumbnail_url, :available, :count)");
+
+			$query->bindParam(':isbn', $isbn);
+			$query->bindParam(':title', $title);
+			$query->bindParam(':publisher_id', $publisher_id);
+			$query->bindParam(':thumbnail_url', $thumbnail_url);
+			$query->bindParam(':price', $price);
+			$query->bindParam(':available', $available);
+			$query->bindParam(':count', $count);
+			$result = $query->execute();
+		}
+		catch (Exception $exception)
+		{
+			if ($GLOBALS ["sqliteDebug"])
+			{
+				return $exception->getMessage();
+			}
+			logError($exception);
+	}
+	return "TODO";
+}
+
+function getBook($isbn)
+{
+	return "TODO";
+}
+
+function getSectionBooks($section_id)
+{
+	return "TODO";
+}
+
+function createReview($isbn, $review, $rating, $user_id)
+{
+	return "TODO";
+}
 ///////////////////
 //Human Resources//
 ///////////////////
@@ -315,7 +538,7 @@ function human_resources_switch()
 	{
 		switch ($_GET["function"])
 		{
-			
+
 		}
 	}
 }
@@ -377,7 +600,7 @@ function student_enrollment_switch()
 				return getCourseList();
 				// else
 				// return "Missing " . $_GET["param-name"]
-			
+
 			// Calls function that toggles availability of course
 			// params: courseID
 			case "toggleCourse":
@@ -466,7 +689,7 @@ function student_enrollment_switch()
 				return withdrawStudent();
 				// else
 				// return "Missing " . $_GET["param-name"]
-			
+
 		}
 	}
 }
@@ -559,7 +782,7 @@ function coop_eval_switch()
 {
 	// Define the possible Co-op Evaluation function URLs which the page can be accessed from
 	$possible_function_url = array(
-		"getStudentEvaluation", "addStudentEvaluation", "updateStudentEvaluation", 
+		"getStudentEvaluation", "addStudentEvaluation", "updateStudentEvaluation",
 		"getCompanies", "getEmployer", "updateEmployer", "addEmployer", "getEmployerEvaluation",
 		"updateEmployerEvaluation", "addEmployerEvaluation", "getCoopAdvisor", "getCoopInfo"
 	);
