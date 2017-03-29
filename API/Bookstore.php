@@ -198,7 +198,7 @@ function findOrCreatePublisher($name, $address, $website){
 		}
 		logError($exception);
 	}
-	return $pub_id[0];
+	return $pub_id["ID"];
 }
 
 function findOrCreateAuthor($f_name, $l_name){
@@ -341,8 +341,9 @@ function orderBook($isbn, $amount)
 		$count_query->bindParam(':isbn', $isbn);
 		$count_result = $count_query->execute();
 		$count = $count_result->fetchArray();
-		$total = $count[0] + $amount;		
+		$total = $count["COUNT"] + $amount;		
         $query = $sqlite->prepare("UPDATE Book SET count=:total WHERE isbn=:isbn;");
+		$query->bindParam(':isbn', $isbn);
 		$query->bindParam(':total', $total);  //update statement not working for some reason
         $result = $query->execute();
 
