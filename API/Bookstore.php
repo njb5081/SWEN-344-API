@@ -4,7 +4,7 @@ function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
-		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook");
+		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -138,8 +138,51 @@ function book_store_switch()
                     return ("viewBookReviews isbn parameter not submitted correctly.");
 					
 				}
+			case "searchBooks":
+				if(isset($_GET["search_attribute"])){
+					//ONLY PRINTING TO FIND OUT IF YOU WILL NEED TO CHECK IF THE FOLLOWING PARAM 
+					//ISSET BEFORE CHECKING TO SEE IF EMPTY
+					echo "The Search String Has been set:", "\n";
+					echo isset($_GET["search_string"]), "\n";
+
+
+					$search_string = (empty($_GET["search_string"]) ? "" : $_GET["search_string"]);
+					switch ($_GET["search_attribute"]){
+						case "isbn":
+							return searchBookByAttribute("isbn", $search_string);
+						case "title":
+							return searchBookByAttribute("title", $search_string);
+						case "price":
+							return searchBookByAttribute("price", $search_string);
+						case "thumbnail_url":
+							return searchBookByAttribute("thumbnail_url", $search_string);
+						case "available":
+							return searchBookByAttribute("available", $search_string);
+						//decided not to allow users to search for:
+						// case "publisher_name":
+						// case "author_name":
+						// case "count":
+					}
+				} else {
+					logError("searchBooks ~ Required search_attribute parameter not submitted correctly.");
+                    return ("searchBooks search_attribute parameter not submitted correctly.");
+				}
+
+
+				// if(isset($_GET["isbn"])){
+				// 	return viewBookReviews($_GET["isbn"]);
+				// }
+
 		}
 	}
+}
+
+
+function searchBookByAttribute($attribute, $search_string){
+	//TODO_SEARCH
+	//GET THE SEARCH TERM IF ITS SET BUT IF ITS NOT THEN JUST SEARCH EVERY BOOK.
+	echo "Search Books Was Called But Was Not Yet Implemented", "\n";
+	echo "Try another function call please!", "\n";
 }
 
 //Define Functions Here
