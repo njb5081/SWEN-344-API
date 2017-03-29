@@ -13,10 +13,10 @@ function book_store_switch()
 			case "createBook":
 				if (isset($_POST["publisher_name"])){
 					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
-					$aid = findOrCreateAuthor($_Post["f_name"], $_POST["l_name"]);
+					$aid = findOrCreateAuthor($_POST["f_name"], $_POST["l_name"]);
 				}
 				else{
-					logError("createBook ~ Required parameters were not submited correctly.");
+					logError("findOrCreatePublisher ~ Required parameters were not submited correctly.");
 					return ("findOrCreatePublisher One or more parameters were not provided");
 				}
 				if (isset($_POST["isbn"]) &&
@@ -26,16 +26,22 @@ function book_store_switch()
 					isset($_POST["available"]) &&
 					isset($_POST["count"]) 
 				)
-					{	
-					return createBook(
-						$_POST["isbn"], 
-						$_POST["title"],
-						$pid,
-						$_POST["price"],
-						$_POST["thumbnail_url"],
-						$_POST["available"],
-						$_POST["count"]
-						);
+				{
+					if(getBook($_POST["isbn"])){
+						return ("The book with the isbn already exists.");
+					} else {
+						//Book with the isbn does not yet exist so go
+						//ahead and create it.
+						return createBook(
+							$_POST["isbn"], 
+							$_POST["title"],
+							$pid,
+							$_POST["price"],
+							$_POST["thumbnail_url"],
+							$_POST["available"],
+							$_POST["count"]
+							);
+						}
 					}
 				else{
 					logError("createBook ~ Required parameters were not submited correctly.");
@@ -58,26 +64,28 @@ function book_store_switch()
 					return ("findOrCreateAuthor One or more parameters were not provided");
 				}
 			case "updateBook":
-				if (isset($_GET["isbn"]) &&
-					isset($_GET["title"]) &&
-					isset($_GET["publisher_id"]) &&
-					isset($_GET["price"]) &&
-					isset($_GET["thumbnail_url"]) &&
-					isset($_GET["available"]) &&
-					isset($_GET["count"]))
-					{
+				if (isset($_POST["isbn"]) &&
+					isset($_POST["title"]) &&
+					isset($_POST["price"]) &&
+					isset($_POST["thumbnail_url"]) &&
+					isset($_POST["available"]) &&
+					isset($_POST["count"]) 
+				)
+					{	
 					return updateBook(
-						$_POST["isbn"],
-						$_POST["title"], 
-						$_POST["publisher_id"], 
+						$_POST["isbn"], 
+						$_POST["title"],
+						$pid,
 						$_POST["price"],
-						$_POST["thumbnail_url"], 
-						$_POST["available"], 
-						$_POST["count"]);
-					} else {
-						logError("updateBook ~ Required parameters were not submitted correctly.");
-						return ("One or more book parameters for updating this book were not provided.");
+						$_POST["thumbnail_url"],
+						$_POST["available"],
+						$_POST["count"]
+						);
 					}
+				else {
+					logError("updateBook ~ Required parameters were not submited correctly.");
+					return ("updateBook One or more parameters were not provided");
+				}
 			case "getBook":
 				//if has params
 				if (isset($_GET["isbn"])){
@@ -130,7 +138,6 @@ function book_store_switch()
 function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
 	logError("createBook ");
-
 	try 
 		{
 			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
