@@ -4,7 +4,7 @@ function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
-		"orderBook");
+		"orderBook", "findOrCreateAuthor");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -13,6 +13,7 @@ function book_store_switch()
 			case "createBook":
 				if (isset($_POST["publisher_name"])){
 					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
+					$aid = findOrCreateAuthor($_Post["f_name"], $_POST["l_name"]);
 				}
 				else{
 					logError("createBook ~ Required parameters were not submited correctly.");
@@ -45,6 +46,16 @@ function book_store_switch()
 				if (isset($_POST["publisher_name"])){
 					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
 					return $pid;
+				}
+			case "findOrCreateAuthor":
+				logError("log or create author case");
+				if (isset($_POST["first_name"]) && isset($_POST["last_name"])){
+					$aid = findorcreateAuthor($_POST["first_name"], $_POST["last_name"]);
+					return $aid;
+				}
+				else{
+					logError("findOrCreateAuthor ~ Required parameters were not submitted correctly.");
+					return ("findOrCreateAuthor One or more parameters were not provided");
 				}
 			case "updateBook":
 				if (isset($_GET["isbn"]) &&
@@ -179,6 +190,41 @@ function findOrCreatePublisher($name, $address, $website){
 		logError($exception);
 	}
 	return $pub_id[0];
+}
+
+function findOrCreateAuthor($f_name, $l_name){
+	logError("findorcreateAuthor ");
+	try{
+		$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
+		
+		$sqlite->enableExceptions(true);
+		$author_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
+		$author_query->bindParam(":f_name", $f_name);	//possible duplicate
+		$author_query->bindParam(":l_name", $l_name);
+		$author_id = $author_query->execute();
+		$auth_id = $author_id->fetchArray();
+		//logError($auth_id[0]);
+		if (empty($auth_id)){
+			$auth_query = $sqlite->prepare("INSERT INTO Author (first_name, last_name) 
+				VALUES (:f_name, :l_name);");
+			$auth_query->bindParam(':f_name', $f_name);
+			$auth_query->bindParam(':l_name', $l_name);
+			$auth_query->execute();
+			$auth_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
+			$author_id = $auth_query->execute();
+			$auth_id = $author_id->fetchArray();			
+		}
+		
+	}
+	catch (Exception $exception)
+	{
+		if ($GLOBALS ["sqliteDebug"]) 
+		{
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
+	return $auth_id["ID"];
 }
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
