@@ -30,11 +30,11 @@ function general_switch()
 			case "test":
 				return APITest();
 			case "login":
-				if (isset($_POST["username"]) && isset($_POST["password"])) 
+				if (isset($_POST["username"]) && isset($_POST["password"]))
 				{
 					return login($_POST["username"], $_POST["password"]);
 				}
-				else 
+				else
 				{
 					logError("loginValid ~ Required parameters were not submit correctly.");
 					return FALSE;
@@ -77,14 +77,14 @@ function general_switch()
 					isset($_POST["email"])
 					)
 					{
-						return createUser($_POST["username"], 
-							$_POST["password"], 
+						return createUser($_POST["username"],
+							$_POST["password"],
 							$_POST["fname"],
 							$_POST["lname"],
 							$_POST["email"]
 							);
 					}
-					else 
+					else
 					{
 						logError("createUser ~ Required parameters were not submit correctly.");
 						return ("createUser One or more parameters were not provided");
@@ -92,7 +92,7 @@ function general_switch()
 		}
 	}
 }
-	
+
 function APITest()
 {
 	return "API Connection Success!";
@@ -100,14 +100,14 @@ function APITest()
 
 function logError($message)
 {
-	try 
+	try
 	{
 		$myfile = fopen($GLOBALS ["errorLogFile"], "a");
 		fwrite($myfile, ($message . "\n"));
 		fclose($myfile);
 	}
 	catch (Exception $exception)
-	{ 
+	{
 		//what should happen if this fails???
 	}
 }
@@ -124,51 +124,51 @@ function encrypt($string)
 function createUser($username, $password, $fname, $lname, $email, $role)
 {
 	$success = FALSE;
-	
+
 	try
 	{
 		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 		$sqlite->enableExceptions(true);
-		
+
 		//first check if the username already exists
 		$query = $sqlite->prepare("SELECT * FROM User WHERE USERNAME=:username");
-		$query->bindParam(':username', $username);		
+		$query->bindParam(':username', $username);
 		$result = $query->execute();
-		
-		if ($record = $result->fetchArray()) 
+
+		if ($record = $result->fetchArray())
 		{
 			return "Username Already Exists";
 		}
-		
+
 		//for varaible reuse
 		$result->finalize();
-		
+
 		$query1 = $sqlite->prepare("INSERT INTO User (USERNAME, PASSWORD, FIRSTNAME, LASTNAME, EMAIL, ROLE) VALUES (:username, :password, :fname, :lname, :email, :role)");
-		
-		$query1->bindParam(':username', $username);		
-		$query1->bindParam(':password', encrypt($password));	
-		$query1->bindParam(':fname', $fname);	
+
+		$query1->bindParam(':username', $username);
+		$query1->bindParam(':password', encrypt($password));
+		$query1->bindParam(':fname', $fname);
 		$query1->bindParam(':lname', $lname);
 		$query1->bindParam(':email', $email);
 		$query1->bindParam(':role', $role);
-		
-		$query1->execute();	
-		
+
+		$query1->execute();
+
 		// clean up any objects
 		$sqlite->close();
-		
+
 		//if it gets here without throwing an error, assume success = true;
 		$success = TRUE;
 	}
 	catch (Exception $exception)
 	{
-		if ($GLOBALS ["sqliteDebug"]) 
+		if ($GLOBALS ["sqliteDebug"])
 		{
 			return $exception->getMessage();
 		}
 		logError($exception);
 	}
-	
+
 	return $success;
 }
 
@@ -176,41 +176,41 @@ function login($username, $password)
 {
 	if (loginValid($username, $password))
 	{
-		try 
+		try
 		{
 			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 			$sqlite->enableExceptions(true);
-			
+
 			//prepare query to protect from sql injection
 			$query = $sqlite->prepare("SELECT * FROM User WHERE USERNAME=:username");
-			$query->bindParam(':username', $username);		
+			$query->bindParam(':username', $username);
 			$result = $query->execute();
-			
-			
+
+
 			//$sqliteResult = $sqlite->query($queryString);
-			
+
 			return $result;
-			
-			if ($record = $result->fetchArray(SQLITE3_ASSOC)) 
+
+			if ($record = $result->fetchArray(SQLITE3_ASSOC))
 			{
 				return $record;
 			}
-		
+
 			$result->finalize();
-			
+
 			// clean up any objects
 			$sqlite->close();
 		}
 		catch (Exception $exception)
 		{
-			if ($GLOBALS ["sqliteDebug"]) 
+			if ($GLOBALS ["sqliteDebug"])
 			{
 				return $exception->getMessage();
 			}
 			logError($exception);
 		}
 	}
-	else 
+	else
 	{
 		return null;
 	}
@@ -222,41 +222,41 @@ function loginValid($username, $password)
 {
 	$valid = FALSE;
 	//return $GLOBALS ["databaseFile"];
-	try 
+	try
 	{
 		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
 		$sqlite->enableExceptions(true);
-		
+
 		//prepare query to protect from sql injection
 		$query = $sqlite->prepare("SELECT * FROM User WHERE USERNAME=:username");
-		$query->bindParam(':username', $username);		
+		$query->bindParam(':username', $username);
 		$result = $query->execute();
-		
-		
+
+
 		//$sqliteResult = $sqlite->query($queryString);
 
-		if ($record = $result->fetchArray()) 
+		if ($record = $result->fetchArray())
 		{
 			if (password_verify($password, $record['PASSWORD']))
 			{
 				$valid = TRUE;
 			}
 		}
-	
+
 		$result->finalize();
-		
+
 		// clean up any objects
 		$sqlite->close();
 	}
 	catch (Exception $exception)
 	{
-		if ($GLOBALS ["sqliteDebug"]) 
+		if ($GLOBALS ["sqliteDebug"])
 		{
 			return $exception->getMessage();
 		}
 		logError($exception);
 	}
-	
+
 	return $valid;
 }
 
@@ -315,7 +315,7 @@ function human_resources_switch()
 	{
 		switch ($_GET["function"])
 		{
-			
+
 		}
 	}
 }
@@ -377,7 +377,7 @@ function student_enrollment_switch()
 				return getCourseList();
 				// else
 				// return "Missing " . $_GET["param-name"]
-			
+
 			// Calls function that toggles availability of course
 			// params: courseID
 			case "toggleCourse":
@@ -466,7 +466,7 @@ function student_enrollment_switch()
 				return withdrawStudent();
 				// else
 				// return "Missing " . $_GET["param-name"]
-			
+
 		}
 	}
 }
@@ -559,7 +559,7 @@ function coop_eval_switch()
 {
 	// Define the possible Co-op Evaluation function URLs which the page can be accessed from
 	$possible_function_url = array(
-		"getStudentEvaluation", "addStudentEvaluation", "updateStudentEvaluation", 
+		"getStudentEvaluation", "addStudentEvaluation", "updateStudentEvaluation",
 		"getCompanies", "getEmployer", "updateEmployer", "addEmployer", "getEmployerEvaluation",
 		"updateEmployerEvaluation", "addEmployerEvaluation", "getCoopAdvisor", "getCoopInfo"
 	);
