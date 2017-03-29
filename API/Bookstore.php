@@ -4,7 +4,7 @@ function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
-		"orderBook", "findOrCreateAuthor");
+		"orderBook", "findOrCreateAuthor", "viewBookReviews");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -113,6 +113,15 @@ function book_store_switch()
                     logError("orderBook ~ Required isbn and-or amount parameter not submitted correctly.");
                     return ("orderBook isbn and-or amount parameter not submitted correctly.");
                 }
+			case "viewBookReviews":
+				if (isset($_GET["isbn"])){
+					return viewBookReviews($_GET["isbn"]);
+				}
+				else{
+					logError("viewBookReviews ~ Required isbn parameter not submitted correctly.");
+                    return ("viewBookReviews isbn parameter not submitted correctly.");
+					
+				}
 		}
 	}
 }
@@ -338,6 +347,33 @@ function orderBook($isbn, $amount)
         $result = $query->execute();
 
         return $total;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
+	
+}
+
+function viewBookReviews($isbn){
+		logError("viewBookReviews ");
+	try
+    {
+        $sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+        $sqlite->enableExceptions(true);
+
+        //prepare query to protect from sql injection
+		$query = $sqlite->prepare("Select * from BookReview where book_isbn=:isbn;");
+		$query->bindParam(':isbn', $isbn);
+		$result = $query->execute();
+		$review = $result->fetchArray();
+
+
+        return $review;
     }
     catch (Exception $exception)
     {
