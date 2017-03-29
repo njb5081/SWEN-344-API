@@ -268,6 +268,8 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$update_book_query->bindParam(':count', $count);
 			$result = $update_book_query->execute();
 			return $result;
+			//if want the book object uncomment following line and return that instead
+			//$book_result = $result->fetchArray();
 		}
 		catch (Exception $exception)
 		{
