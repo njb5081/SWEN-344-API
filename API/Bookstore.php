@@ -265,18 +265,18 @@ function createReview($id, $review, $rating, $book_isbn, $user_id)
 	try{
 		$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 		$sqlite->enableExceptions(true);
-		
+
 		//prepare query to protect from sql injection
-        $query = $sqlite->prepare("INSERT INTO BookReview (id, review, rating,
-							book_isbn, user_id) VALUES (:id, :review, :rating,
-							:book_isbn, :user_id)");
+    $query = $sqlite->prepare("INSERT INTO BookReview (id, review, rating,
+					book_isbn, user_id) VALUES (:id, :review, :rating,
+					:book_isbn, :user_id)");
 		$query->bindParam(':id', $id);
 		$query->bindParam(':review', $review);
 		$query->bindParam(':rating', $rating);
 		$query->bindParam(':book_isbn', $book_isbn);
 		$query->bindParam(':user_id', $user_id);
 		$result = $query->execute();
-		
+
 		return $result;
 	}catch (Exception $exception){
 		if ($GLOBALS ["sqliteDebug"]){
