@@ -83,29 +83,31 @@ function book_store_switch()
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
 				}
-      case "toggleBook":
-          if (isset($_GET["isbn"]) && isset($_GET["available"]))
-          {
-              return toggleBook($_GET["isbn"], $_GET["available"]);
-          }
-          else{
-              logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
-              return ("toggleBook isbn and-or available parameter not submitted correctly.");
-          }
+			case "toggleBook":
+				if (isset($_GET["isbn"]) && isset($_GET["available"]))
+				{
+					return toggleBook($_GET["isbn"], $_GET["available"]);
+				}
+				else{
+					logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
+					return ("toggleBook isbn and-or available parameter not submitted correctly.");
+				}
 			case "createReview":
-				if (isset($_POST["isbn"]) &&
+				if (isset($_POST["id"]) &&
 					isset($_POST["review"]) &&
 					isset($_POST["rating"]) &&
+					isset($_POST["book_isbn"]) &&
 					isset($_POST["user_id"]))
 					{
 					return createReview(
-						$_POST["isbn"],
+						$_POST["id"],
 						$_POST["review"],
 						$_POST["rating"],
+						$_POST["book_isbn"],
 						$_POST["user_id"]);
 				} else {
-					logError("createReview ~ Required parameters not submitted correctly.")
-					return ("createReview parameters not submitted correctly.")
+					logError("createReview ~ Required parameters not submitted correctly.");
+					return ("createReview parameters not submitted correctly.");
 				}
 		}
 	}
@@ -257,9 +259,31 @@ function toggleBook($isbn, $isAvailable)
         logError($exception);
     }
 }
-function createReview($isbn, $review, $rating, $user_id)
+function createReview($id, $review, $rating, $book_isbn, $user_id)
 {
-	return "TODO";
+	logError("createReview ");
+	try{
+		$sqlite = new SQLite3($GLOBALS["databaseFile"]);
+		$sqlite->enableExceptions(true);
+		
+		//prepare query to protect from sql injection
+        $query = $sqlite->prepare("INSERT INTO BookReview (id, review, rating,
+							book_isbn, user_id) VALUES (:id, :review, :rating,
+							:book_isbn, :user_id)");
+		$query->bindParam(':id', $id);
+		$query->bindParam(':review', $review);
+		$query->bindParam(':rating', $rating);
+		$query->bindParam(':book_isbn', $book_isbn);
+		$query->bindParam(':user_id', $user_id);
+		$result = $query->execute();
+		
+		return $result;
+	}catch (Exception $exception){
+		if ($GLOBALS ["sqliteDebug"]){
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
 }
 
 
