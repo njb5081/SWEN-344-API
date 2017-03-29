@@ -4,7 +4,7 @@ function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
-		"orderBook", "findOrCreateAuthor", "viewBookReviews");
+		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -64,6 +64,14 @@ function book_store_switch()
 					return ("findOrCreateAuthor One or more parameters were not provided");
 				}
 			case "updateBook":
+				if (isset($_POST["publisher_name"])){
+					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
+					$aid = findOrCreateAuthor($_POST["f_name"], $_POST["l_name"]);
+				}
+				else{
+					logError("findOrCreatePublisher ~ Required parameters were not submited correctly.");
+					return ("findOrCreatePublisher One or more parameters were not provided");
+				}
 				if (isset($_POST["isbn"]) &&
 					isset($_POST["title"]) &&
 					isset($_POST["price"]) &&
@@ -245,24 +253,21 @@ function findOrCreateAuthor($f_name, $l_name){
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
 {
+	logError("updateBook ");
 	try 
 		{
-			$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+			$sqlite = new SQLite3($GLOBALS["databaseFile"]); 
 			$sqlite->enableExceptions(true);
-			
-			//prepare query to protect from sql injection
-			$query = $sqlite->prepare("INSERT INTO Book (isbn, title, published_by, 
-						price, thumbnail_url, available, count) VALUES (:isbn, :title, :published_by,
-							:price, :thumbnail_url, :available, :count)");
-							
-			$query->bindParam(':isbn', $isbn);
-			$query->bindParam(':title', $title);
-			$query->bindParam(':publisher_id', $publisher_id);
-			$query->bindParam(':thumbnail_url', $thumbnail_url);
-			$query->bindParam(':price', $price);
-			$query->bindParam(':available', $available);
-			$query->bindParam(':count', $count);
-			$result = $query->execute();
+			$update_book_query = $sqlite->prepare("UPDATE Book SET title=:title, publisher_id=:publisher_id, price=:price, thumbnail_url=:thumbnail_url, available=:available, count=:count WHERE isbn=:isbn");   
+			$update_book_query->bindParam(':isbn', $isbn);
+			$update_book_query->bindParam(':title', $title);
+			$update_book_query->bindParam(':publisher_id', $publisher_id);
+			$update_book_query->bindParam(':thumbnail_url', $thumbnail_url);
+			$update_book_query->bindParam(':price', $price);
+			$update_book_query->bindParam(':available', $available);
+			$update_book_query->bindParam(':count', $count);
+			$result = $update_book_query->execute();
+			return $result;
 		}
 		catch (Exception $exception)
 		{
