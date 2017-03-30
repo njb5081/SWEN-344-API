@@ -30,7 +30,6 @@ function general_switch($getFunctions)
 	
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
-		echo "change";
 		switch ($_GET["function"])
 		{
 			case "test":

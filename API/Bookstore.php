@@ -306,7 +306,14 @@ function findOrCreateAuthor($f_name, $l_name){
 			$auth_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
 			$author_id = $auth_query->execute();
 			$auth_id = $author_id->fetchArray();
+			
+			return $auth_id["ID"];
 		}
+		else
+		{
+			return NULL;
+		}
+		
 
 	}
 	catch (Exception $exception)
@@ -317,7 +324,6 @@ function findOrCreateAuthor($f_name, $l_name){
 		}
 		logError($exception);
 	}
-	return $auth_id["ID"];
 }
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
@@ -327,7 +333,9 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 		{
 			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 			$sqlite->enableExceptions(true);
+			
 			$update_book_query = $sqlite->prepare("UPDATE Book SET title=:title, publisher_id=:publisher_id, price=:price, thumbnail_url=:thumbnail_url, available=:available, count=:count WHERE isbn=:isbn");
+			
 			$update_book_query->bindParam(':isbn', $isbn);
 			$update_book_query->bindParam(':title', $title);
 			$update_book_query->bindParam(':publisher_id', $publisher_id);
@@ -335,8 +343,11 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$update_book_query->bindParam(':price', $price);
 			$update_book_query->bindParam(':available', $available);
 			$update_book_query->bindParam(':count', $count);
+			
 			$result = $update_book_query->execute();
 			//$book_result = $result->fetchArray();
+			
+			return $result; //keep in mind that this wont actually return any data since its an update query -Daniel Roberts
 		}
 		catch (Exception $exception)
 		{
@@ -346,7 +357,6 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			}
 			logError($exception);
 	}
-	return $result;
 }
 
 function getBook($isbn)
@@ -362,6 +372,8 @@ function getBook($isbn)
 		//need to get everything out of the dict
 		$result = $book_query->execute();
 		$book_result = $result->fetchArray();
+		
+		return $book_result;
 	}
 	catch (Exception $exception)
 	{
@@ -371,7 +383,6 @@ function getBook($isbn)
 		}
 		logError($exception);
 	}
-	return $book_result;
 }
 
 function getSectionBooks($section_id)
