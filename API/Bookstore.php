@@ -4,7 +4,8 @@ function book_store_switch()
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
-		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview");
+		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview", 
+		"viewPurchaseHistory");
 
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
@@ -154,6 +155,7 @@ function book_store_switch()
 					logError("viewBookReviews ~ Required isbn parameter not submitted correctly.");
                     return ("viewBookReviews isbn parameter not submitted correctly.");
 				}
+
 			case "searchBooks":
 				if(isset($_GET["search_attribute"])){
 					//ONLY PRINTING TO FIND OUT IF YOU WILL NEED TO CHECK IF THE FOLLOWING PARAM 
@@ -184,11 +186,14 @@ function book_store_switch()
                     return ("searchBooks search_attribute parameter not submitted correctly.");
 				}
 
-
-				// if(isset($_GET["isbn"])){
-				// 	return viewBookReviews($_GET["isbn"]);
-				// }
-
+			case "viewPurchaseHistory":
+				if (isset($_GET["user_id"])){
+					return viewPurchaseHistory($_GET["user_id"]);
+				}
+				else{
+					logError("viewPurchaseHistory ~ Required user_id parameter not submitted correctly.");
+                    return ("viewPurchaseHistory user_id parameter not submitted correctly.");
+				}
 		}
 	}
 }
@@ -484,5 +489,37 @@ function viewBookReviews($isbn){
 
 }
 
+function viewPurchaseHistory($user_id)
+{
+	try
+    {
+        $sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+        $sqlite->enableExceptions(true);
+		
+        //prepare query to protect from sql injection
+		// !!TODO: join to get the order status and order item
+		$query = $sqlite->prepare("Select order_datetime, subtotal from BookOrder where user_id=:user_id;");
+		$query->bindParam(':user_id', $user_id);
+		$result = $query->execute();
+		
+		$bookOrders = array();
+		
+		// get all the rows until none are left to fetch
+		while ( $row = $result->fetchArray() )
+		{
+			// Add sql row to our final result
+			array_push($bookOrders, $row);
+		}
+		return $bookOrders;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
+}
 
 ?>
