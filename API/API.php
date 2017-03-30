@@ -7,7 +7,8 @@ $result = "An error has occurred";
 // needed globals
 $errorLogFile = "errors.txt";
 
-$databaseFile = getcwd(). "/../Database/SWEN344DB.db";
+$databaseFile = __DIR__.DIRECTORY_SEPARATOR."../Database/SWEN344DB.db";
+
 
 // debug switch
 $sqliteDebug = true; //SET TO FALSE BEFORE OFFICIAL RELEASE
