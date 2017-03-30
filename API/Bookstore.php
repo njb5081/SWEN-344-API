@@ -496,9 +496,24 @@ function viewPurchaseHistory($user_id)
         $sqlite = new SQLite3($GLOBALS ["databaseFile"]);
         $sqlite->enableExceptions(true);
 		
+		
+		// select s.status, BookOrder.order_datetime From BookOrder 
+		//	Join OrderItem as o on BookOrder.id = o.order_id 
+		//	JOIN Book as b on o.book_isbn=b.isbn 
+		//	Join OrderStatus as s on BookOrder.status_id = s.id 
+		//	where BookOrder.user_id=1;
+		
+		
+
         //prepare query to protect from sql injection
-		// !!TODO: join to get the order status and order item
-		$query = $sqlite->prepare("Select order_datetime, subtotal from BookOrder where user_id=:user_id;");
+		// !!TODO: join to get the author
+		$query = $sqlite->prepare("SELECT BookOrder.subtotal, s.status, b.title, b.price 
+			FROM BookOrder 
+			JOIN OrderItem as o on BookOrder.id = o.order_id
+			JOIN Book as b on o.book_isbn=b.isbn 
+			JOIN OrderStatus as s on BookOrder.status_id = s.id 
+			WHERE BookOrder.user_id=:user_id;");
+		// inner join OrderItem as o on BookOrder.ID = o.order_id;
 		$query->bindParam(':user_id', $user_id);
 		$result = $query->execute();
 		
