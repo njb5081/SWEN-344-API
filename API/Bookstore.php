@@ -1,12 +1,17 @@
 <?php
 // Switchboard to Book Store Functions
-function book_store_switch()
+function book_store_switch($getFunctions)
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
 		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview", 
 		"viewPurchaseHistory");
 
+	if ($getFunctions)
+	{
+		return $possible_function_url;
+	}
+		
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
 		switch ($_GET["function"])
