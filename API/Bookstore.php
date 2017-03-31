@@ -1,11 +1,17 @@
 <?php
 // Switchboard to Book Store Functions
-function book_store_switch()
+function book_store_switch($getFunctions)
 {
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
-		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview");
+		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview", 
+		"viewPurchaseHistory", "purchaseBook");
 
+	if ($getFunctions)
+	{
+		return $possible_function_url;
+	}
+		
 	if (isset($_GET["function"]) && in_array($_GET["function"], $possible_function_url))
 	{
 		switch ($_GET["function"])
@@ -27,9 +33,9 @@ function book_store_switch()
 					isset($_POST["count"])
 				)
 				{
-					if(getBook($_POST["isbn"])){
+/* 					if(getBook($_POST["isbn"])){
 						return ("The book with the isbn already exists.");
-					} else {
+					} else { */
 						//Book with the isbn does not yet exist so go
 						//ahead and create it.
 						return createBook(
@@ -41,7 +47,7 @@ function book_store_switch()
 							$_POST["available"],
 							$_POST["count"]
 							);
-						}
+					//	}
 					}
 				else{
 					logError("createBook ~ Required parameters were not submited correctly.");
@@ -69,8 +75,8 @@ function book_store_switch()
 					$aid = findOrCreateAuthor($_POST["f_name"], $_POST["l_name"]);
 				}
 				else{
-					logError("findOrCreatePublisher ~ Required parameters were not submited correctly.");
-					return ("findOrCreatePublisher One or more parameters were not provided");
+					logError("updateBook ~ Required parameters were not submited correctly.");
+					return ("updateBook ~ One or more parameters were not provided");
 				}
 				if (isset($_POST["isbn"]) &&
 					isset($_POST["title"]) &&
@@ -154,6 +160,7 @@ function book_store_switch()
 					logError("viewBookReviews ~ Required isbn parameter not submitted correctly.");
                     return ("viewBookReviews isbn parameter not submitted correctly.");
 				}
+
 			case "searchBooks":
 				if(isset($_GET["search_attribute"])){
 					//ONLY PRINTING TO FIND OUT IF YOU WILL NEED TO CHECK IF THE FOLLOWING PARAM 
@@ -173,6 +180,23 @@ function book_store_switch()
 				} else {
 					logError("searchBooks ~ Required search_attribute parameter not submitted correctly.");
                     return ("searchBooks search_attribute parameter not submitted correctly.");
+				}
+			case "viewPurchaseHistory":
+				if (isset($_GET["user_id"])){
+					return viewPurchaseHistory($_GET["user_id"]);
+				}
+				else{
+					logError("viewPurchaseHistory ~ Required user_id parameter not submitted correctly.");
+                    return ("viewPurchaseHistory user_id parameter not submitted correctly.");
+				}
+			
+			case "purchaseBook":
+				if (isset($_GET["isbn"]) && ($_GET["user_id"]) && ($_GET["price"])){
+					return purchaseBook($_GET["isbn"], $_GET["user_id"], $_GET["price"]);
+				}
+				else{
+					logError("purchaseBook ~ Required isbn and/or user_id parameter not submitted correctly.");
+					return ("purchaseBook isbn or user_id parameter not submitted correctly.");
 				}
 		}
 	}
@@ -325,7 +349,14 @@ function findOrCreateAuthor($f_name, $l_name){
 			$auth_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
 			$author_id = $auth_query->execute();
 			$auth_id = $author_id->fetchArray();
+			
+			return $auth_id["ID"];
 		}
+		else
+		{
+			return NULL;
+		}
+		
 
 	}
 	catch (Exception $exception)
@@ -336,7 +367,6 @@ function findOrCreateAuthor($f_name, $l_name){
 		}
 		logError($exception);
 	}
-	return $auth_id["ID"];
 }
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
@@ -346,7 +376,9 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 		{
 			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 			$sqlite->enableExceptions(true);
+			
 			$update_book_query = $sqlite->prepare("UPDATE Book SET title=:title, publisher_id=:publisher_id, price=:price, thumbnail_url=:thumbnail_url, available=:available, count=:count WHERE isbn=:isbn");
+			
 			$update_book_query->bindParam(':isbn', $isbn);
 			$update_book_query->bindParam(':title', $title);
 			$update_book_query->bindParam(':publisher_id', $publisher_id);
@@ -354,8 +386,11 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$update_book_query->bindParam(':price', $price);
 			$update_book_query->bindParam(':available', $available);
 			$update_book_query->bindParam(':count', $count);
+			
 			$result = $update_book_query->execute();
 			//$book_result = $result->fetchArray();
+			
+			return $result; //keep in mind that this wont actually return any data since its an update query -Daniel Roberts
 		}
 		catch (Exception $exception)
 		{
@@ -365,7 +400,6 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			}
 			logError($exception);
 	}
-	return $result;
 }
 
 function getBook($isbn)
@@ -381,6 +415,8 @@ function getBook($isbn)
 		//need to get everything out of the dict
 		$result = $book_query->execute();
 		$book_result = $result->fetchArray();
+		
+		return $book_result;
 	}
 	catch (Exception $exception)
 	{
@@ -390,12 +426,38 @@ function getBook($isbn)
 		}
 		logError($exception);
 	}
-	return $book_result;
 }
 
 function getSectionBooks($section_id)
 {
-	return "TODO";
+	try
+	{
+		$sqlite = new SQLite3($GLOBALS["databaseFile"]);
+
+		$sqlite->enableExceptions(true);
+		$section_query = $sqlite->prepare("Select * from Sectionbook where section_id=
+			:section_id;");
+		$section_query->bindParam(':section_id', $section_id);
+		$result = $section_query->execute();
+
+		$all_section_books = array();
+
+		while ($row = $result->fetchArray())
+		   {
+			   array_push($all_section_books, $row);
+		   }
+
+		   return $all_section_books;
+   }
+   catch (Exception $exception)   
+    {
+		if ($GLOBALS ["sqliteDebug"])
+        {
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
+
 }
 
 /* Change a book from available to customers to unavailable and vice versa */
@@ -444,9 +506,17 @@ function createReview($id, $review, $rating, $book_isbn, $user_id)
 		$query->bindParam(':book_isbn', $book_isbn);
 		$query->bindParam(':user_id', $user_id);
 		$result = $query->execute();
+	
+		$all_reviews = array();
+		
+		while ($row = $result->fetchArray())
+		{
+			array_push($all_reviews, $row);
+		}
+		return $all_reviews;
 
-		return $result;
-	}catch (Exception $exception){
+	}
+	catch (Exception $exception){
 		if ($GLOBALS ["sqliteDebug"]){
 			return $exception->getMessage();
 		}
@@ -501,6 +571,88 @@ function viewBookReviews($isbn){
 
 
         return $review;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
+
+}
+
+function viewPurchaseHistory($user_id)
+{
+	try
+    {
+        $sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+        $sqlite->enableExceptions(true);
+
+        //prepare query to protect from sql injection
+		// !!TODO: join to get the author
+		$query = $sqlite->prepare("SELECT BookOrder.subtotal, b.title, b.price 
+			FROM BookOrder 
+			JOIN OrderItem as o on BookOrder.id = o.order_id
+			JOIN Book as b on o.book_isbn=b.isbn  
+			WHERE BookOrder.user_id=:user_id;");
+		$query->bindParam(':user_id', $user_id);
+		$result = $query->execute();
+		
+		$bookOrders = array();
+		
+		// get all the rows until none are left to fetch
+		while ( $row = $result->fetchArray() )
+		{
+			// Add sql row to our final result
+			array_push($bookOrders, $row);
+		}
+		return $bookOrders;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
+}
+
+
+function purchaseBook($isbn, $user_id, $price){
+	try
+	{
+		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+		$sqlite->enableExceptions(true);
+
+        //prepare query to protect from sql injection
+		$count_query = $sqlite->prepare("Select count from Book where isbn=:isbn;");
+		$count_query->bindParam(':isbn', $isbn);
+		$count_result = $count_query->execute();
+		$count = $count_result->fetchArray();
+		$total = $count["COUNT"] - 1;
+
+        $query = $sqlite->prepare("UPDATE Book SET count=:total WHERE isbn=:isbn;");
+		$query->bindParam(':isbn', $isbn);
+		$query->bindParam(':total', $total);  //update statement not working for some r
+        $result = $query->execute();
+
+	   $hist_query = $sqlite->prepare("Insert into BookOrder (subtotal, user_id)
+			VALUES (:price, :user_id);");
+		$hist_query->bindParam(':price', $price);
+		$hist_query->bindParam(':user_id', $user_id);
+        $result = $hist_query->execute();
+
+		$item_query = $sqlite->prepare("Insert into OrderItem (order_id, Book_isbn)
+			VALUES (:order_id, :isbn);");
+	   $order_id = 1;
+		$item_query->bindParam(':order_id', $order_id);
+		$item_query->bindParam(':isbn', $isbn);
+        $result = $item_query->execute();
+
+        return $result;
     }
     catch (Exception $exception)
     {
