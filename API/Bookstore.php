@@ -158,47 +158,76 @@ function book_store_switch()
 				if(isset($_GET["search_attribute"])){
 					//ONLY PRINTING TO FIND OUT IF YOU WILL NEED TO CHECK IF THE FOLLOWING PARAM 
 					//ISSET BEFORE CHECKING TO SEE IF EMPTY
-					echo "The Search String Has been set:", "\n";
-					echo isset($_GET["search_string"]), "\n";
+					// echo "The Search String Has been set: ", "\n";
+					// echo isset($_GET["search_string"]), "\n";
+					// echo $_GET["search_string"], "\n";
+					// echo "The search_attribute Has been set: ", "\n";
+					// echo isset($_GET["search_attribute"]), "\n";
+					// echo $_GET["search_attribute"], "\n";
 
 
-					$search_string = (empty($_GET["search_string"]) ? "" : $_GET["search_string"]);
-					switch ($_GET["search_attribute"]){
-						case "isbn":
-							return searchBookByAttribute("isbn", $search_string);
-						case "title":
-							return searchBookByAttribute("title", $search_string);
-						case "price":
-							return searchBookByAttribute("price", $search_string);
-						case "thumbnail_url":
-							return searchBookByAttribute("thumbnail_url", $search_string);
-						case "available":
-							return searchBookByAttribute("available", $search_string);
-						//decided not to allow users to search for:
-						// case "publisher_name":
-						// case "author_name":
-						// case "count":
-					}
+					// $search_string = (empty($_GET["search_string"]) ? "" : $_GET["search_string"]);
+					// echo $search_string, "\n";;
+					// return searchBooks($_GET["search_attribute"], $search_string);
+					return searchBooks($_GET["search_attribute"], $_GET["search_string"]);
 				} else {
 					logError("searchBooks ~ Required search_attribute parameter not submitted correctly.");
                     return ("searchBooks search_attribute parameter not submitted correctly.");
 				}
-
-
-				// if(isset($_GET["isbn"])){
-				// 	return viewBookReviews($_GET["isbn"]);
-				// }
-
 		}
 	}
 }
 
 
-function searchBookByAttribute($attribute, $search_string){
-	//TODO_SEARCH
-	//GET THE SEARCH TERM IF ITS SET BUT IF ITS NOT THEN JUST SEARCH EVERY BOOK.
-	echo "Search Books Was Called But Was Not Yet Implemented", "\n";
-	echo "Try another function call please!", "\n";
+/*
+Searches for the book by the $search_key by the specified $attribute.
+
+PARAMS:
+	$attribute (string)
+	$search_key (TYPE DEPENDS ON THE ATTRIBUTE BEING SEARCHED FOR)
+
+Author(s): Kaitlin
+*/
+function searchBooks($attribute, $search_key)
+{
+	echo "searchBOOKS was called !!!!!!!!!!!!!!!!!!", "\n";
+	echo "#{$attribute}", "\n";
+	#, $type
+
+	logError("searchBooks ");
+	try
+		{
+			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+
+			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
+			$sqlite->enableExceptions(true);
+
+			//prepare query to protect from sql injection for appropriate query
+			if (($attribute == "title") || ($attribute == "thumbnail_url")) {
+				echo "searching for  a STRING", "\n";
+			} elseif(($attribute == "isbn") || ($attribute == "available")) {
+				echo "searching for  a INTEGER", "\n";
+				$search_query = $sqlite->prepare("Select * from book where $attribute LIKE '%[:search_key_placeholder]%';");
+				//$search_query = $sqlite->prepare("Select * from book where $attribute=:isbn;");
+				$search_query->bindParam(':search_key_placeholder', $search_key);
+			} elseif($attribute == "available") {
+				echo "searching for  a BOOLEAN", "\n";
+			} else {
+				echo "INVALID ARGUMENTS FOR SEARCHING BOOKS";
+			}
+
+			$result = $search_query->execute();
+			$book_result = $result->fetchArray();
+			return $book_result;
+	}
+	catch (Exception $exception)
+	{
+		if ($GLOBALS ["sqliteDebug"])
+		{
+			return $exception->getMessage();
+		}
+		logError($exception);
+	}
 }
 
 //Define Functions Here
