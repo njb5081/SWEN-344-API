@@ -200,13 +200,9 @@ function searchBooks($attribute, $search_key)
 			$sqlite->enableExceptions(true);
 
 			//prepare query to protect from sql injection for appropriate query
-			if (($attribute == "title") || ($attribute == "thumbnail_url")) {
-				echo "searching for  a STRING", "\n";
+			if(($attribute == "isbn") || ($attribute == "available") || ($attribute == "title") || ($attribute == "thumbnail_url")) {
 				$search_query = $sqlite->prepare("Select * from book where $attribute LIKE :search_key_placeholder;");
-				$search_query->bindParam(':search_key_placeholder', $search_key);
-			} elseif(($attribute == "isbn") || ($attribute == "available")) {
-				echo "searching for  a INTEGER", "\n";
-				$search_query = $sqlite->prepare("Select * from book where $attribute LIKE :search_key_placeholder;");
+				$search_key = "%" . $search_key . "%" ;
 				$search_query->bindParam(':search_key_placeholder', $search_key);
 			} else {
 				echo "INVALID ARGUMENTS FOR SEARCHING BOOKS";
