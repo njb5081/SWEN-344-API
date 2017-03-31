@@ -163,19 +163,6 @@ function book_store_switch($getFunctions)
 
 			case "searchBooks":
 				if(isset($_GET["search_attribute"])){
-					//ONLY PRINTING TO FIND OUT IF YOU WILL NEED TO CHECK IF THE FOLLOWING PARAM 
-					//ISSET BEFORE CHECKING TO SEE IF EMPTY
-					// echo "The Search String Has been set: ", "\n";
-					// echo isset($_GET["search_string"]), "\n";
-					// echo $_GET["search_string"], "\n";
-					// echo "The search_attribute Has been set: ", "\n";
-					// echo isset($_GET["search_attribute"]), "\n";
-					// echo $_GET["search_attribute"], "\n";
-
-
-					// $search_string = (empty($_GET["search_string"]) ? "" : $_GET["search_string"]);
-					// echo $search_string, "\n";;
-					// return searchBooks($_GET["search_attribute"], $search_string);
 					return searchBooks($_GET["search_attribute"], $_GET["search_string"]);
 				} else {
 					logError("searchBooks ~ Required search_attribute parameter not submitted correctly.");
