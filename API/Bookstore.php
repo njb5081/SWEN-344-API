@@ -5,7 +5,7 @@ function book_store_switch($getFunctions)
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
 		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview", 
-		"viewPurchaseHistory", "purchaseBook");
+		"viewPurchaseHistory", "purchaseBook", "getAllBooks");
 
 	if ($getFunctions)
 	{
@@ -185,20 +185,12 @@ function book_store_switch($getFunctions)
 					logError("purchaseBook ~ Required isbn and/or user_id parameter not submitted correctly.");
 					return ("purchaseBook isbn or user_id parameter not submitted correctly.");
 				}
+			case "getAllBooks":
+				return getAllBooks();
 		}
 	}
 }
 
-
-/*
-Searches for the book by the $search_key by the specified $attribute.
-
-PARAMS:
-	$attribute (string)
-	$search_key (TYPE DEPENDS ON THE ATTRIBUTE BEING SEARCHED FOR)
-
-Author(s): Kaitlin
-*/
 function searchBooks($attribute, $search_key)
 {
 	logError("searchBooks ");
@@ -221,9 +213,7 @@ function searchBooks($attribute, $search_key)
 			}
 
 			$result = $search_query->execute();
-			
 			$matchingBooks = array();
-			
 			// get all the rows until none are left to fetch
 			while ( $row = $result->fetchArray() )
 			{
@@ -231,9 +221,6 @@ function searchBooks($attribute, $search_key)
 				array_push($matchingBooks, $row);
 			}
 			return $matchingBooks;
-			// $result = $search_query->execute();
-			// $book_result = $result->fetchArray();
-			// return $book_result;
 	}
 	catch (Exception $exception)
 	{
@@ -654,6 +641,34 @@ function purchaseBook($isbn, $user_id, $price){
         logError($exception);
     }
 
+}
+
+function getAllBooks(){
+	try
+	{
+		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+		$sqlite->enableExceptions(true);
+
+		$query = $sqlite->prepare("SELECT * FROM Book;");
+		$result = $query->execute();
+		
+		$allBooks = array();
+		// get all the rows until none are left to fetch
+		while ( $row = $result->fetchArray() )
+		{
+			// Add sql row to our final result
+			array_push($allBooks, $row);
+		}
+		return $allBooks;
+    }
+    catch (Exception $exception)
+    {
+        if ($GLOBALS ["sqliteDebug"])
+        {
+            return $exception->getMessage();
+        }
+        logError($exception);
+    }
 }
 
 
