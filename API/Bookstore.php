@@ -219,9 +219,21 @@ function searchBooks($attribute, $search_key)
 			} else {
 				echo "INVALID ARGUMENTS FOR SEARCHING BOOKS";
 			}
+
 			$result = $search_query->execute();
-			$book_result = $result->fetchArray();
-			return $book_result;
+			
+			$matchingBooks = array();
+			
+			// get all the rows until none are left to fetch
+			while ( $row = $result->fetchArray() )
+			{
+				// Add sql row to our final result
+				array_push($matchingBooks, $row);
+			}
+			return $matchingBooks;
+			// $result = $search_query->execute();
+			// $book_result = $result->fetchArray();
+			// return $book_result;
 	}
 	catch (Exception $exception)
 	{
