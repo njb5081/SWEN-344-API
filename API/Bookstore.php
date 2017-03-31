@@ -201,15 +201,9 @@ Author(s): Kaitlin
 */
 function searchBooks($attribute, $search_key)
 {
-	echo "searchBOOKS was called !!!!!!!!!!!!!!!!!!", "\n";
-	echo "#{$attribute}", "\n";
-	#, $type
-
 	logError("searchBooks ");
 	try
 		{
-			//$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
-
 			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 			$sqlite->enableExceptions(true);
 
@@ -218,15 +212,13 @@ function searchBooks($attribute, $search_key)
 				echo "searching for  a STRING", "\n";
 			} elseif(($attribute == "isbn") || ($attribute == "available")) {
 				echo "searching for  a INTEGER", "\n";
-				$search_query = $sqlite->prepare("Select * from book where $attribute LIKE '%[:search_key_placeholder]%';");
-				//$search_query = $sqlite->prepare("Select * from book where $attribute=:isbn;");
+				$search_query = $sqlite->prepare("Select * from book where $attribute LIKE :search_key_placeholder;");
 				$search_query->bindParam(':search_key_placeholder', $search_key);
 			} elseif($attribute == "available") {
 				echo "searching for  a BOOLEAN", "\n";
 			} else {
 				echo "INVALID ARGUMENTS FOR SEARCHING BOOKS";
 			}
-
 			$result = $search_query->execute();
 			$book_result = $result->fetchArray();
 			return $book_result;
