@@ -29,14 +29,7 @@ function searchBooks($attribute, $search_key)
 			}
 			return $matchingBooks;
 	}
-	catch (Exception $exception)
-	{
-		if ($GLOBALS ["sqliteDebug"])
-		{
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
 }
 
 //Define Functions Here
@@ -64,16 +57,11 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$query->bindParam(':available', $available);
 			$query->bindParam(':count', $count);
 			$result = $query->execute();
+			
+			header("HTTP/1.1 201 Book Created");
 			return $result;
 	}
-	catch (Exception $exception)
-	{
-		if ($GLOBALS ["sqliteDebug"])
-		{
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
 }
 
 function findOrCreatePublisher($name, $address, $website){
@@ -102,14 +90,8 @@ function findOrCreatePublisher($name, $address, $website){
 		}
 
 	}
-	catch (Exception $exception)
-	{
-		if ($GLOBALS ["sqliteDebug"])
-		{
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
+	
 	return $pub_id["ID"];
 }
 
@@ -141,17 +123,8 @@ function findOrCreateAuthor($f_name, $l_name){
 		{
 			return NULL;
 		}
-		
-
 	}
-	catch (Exception $exception)
-	{
-		if ($GLOBALS ["sqliteDebug"])
-		{
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
 }
 
 function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
@@ -177,14 +150,7 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			
 			return $result; //keep in mind that this wont actually return any data since its an update query -Daniel Roberts
 		}
-		catch (Exception $exception)
-		{
-			if ($GLOBALS ["sqliteDebug"])
-			{
-				return $exception->getMessage();
-			}
-			logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
 }
 
 function getBook($isbn)
@@ -200,17 +166,10 @@ function getBook($isbn)
 		//need to get everything out of the dict
 		$result = $book_query->execute();
 		$book_result = $result->fetchArray();
-		
+				
 		return $book_result;
 	}
-	catch (Exception $exception)
-	{
-		if ($GLOBALS ["sqliteDebug"])
-		{
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
 }
 
 function getSectionBooks($section_id)
@@ -234,14 +193,7 @@ function getSectionBooks($section_id)
 
 		   return $all_section_books;
    }
-   catch (Exception $exception)   
-    {
-		if ($GLOBALS ["sqliteDebug"])
-        {
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+   catch (Exception $exception) { handleException($exception); }
 
 }
 
@@ -265,14 +217,7 @@ function toggleBook($isbn, $isAvailable)
 
         return $result;
     }
-    catch (Exception $exception)
-    {
-        if ($GLOBALS ["sqliteDebug"])
-        {
-            return $exception->getMessage();
-        }
-        logError($exception);
-    }
+    catch (Exception $exception) { handleException($exception); }
 }
 function createReview($id, $review, $rating, $book_isbn, $user_id)
 {
@@ -301,12 +246,7 @@ function createReview($id, $review, $rating, $book_isbn, $user_id)
 		return $all_reviews;
 
 	}
-	catch (Exception $exception){
-		if ($GLOBALS ["sqliteDebug"]){
-			return $exception->getMessage();
-		}
-		logError($exception);
-	}
+	catch (Exception $exception) { handleException($exception); }
 }
 
 function orderBook($isbn, $amount)
@@ -330,14 +270,7 @@ function orderBook($isbn, $amount)
 
         return $total;
     }
-    catch (Exception $exception)
-    {
-        if ($GLOBALS ["sqliteDebug"])
-        {
-            return $exception->getMessage();
-        }
-        logError($exception);
-    }
+    catch (Exception $exception) { handleException($exception); }
 
 }
 
@@ -354,17 +287,10 @@ function viewBookReviews($isbn){
 		$result = $query->execute();
 		$review = $result->fetchArray();
 
-
+		header("HTTP/1.1 200");
         return $review;
     }
-    catch (Exception $exception)
-    {
-        if ($GLOBALS ["sqliteDebug"])
-        {
-            return $exception->getMessage();
-        }
-        logError($exception);
-    }
+    catch (Exception $exception) { handleException($exception); }
 
 }
 
@@ -395,14 +321,7 @@ function viewPurchaseHistory($user_id)
 		}
 		return $bookOrders;
     }
-    catch (Exception $exception)
-    {
-        if ($GLOBALS ["sqliteDebug"])
-        {
-            return $exception->getMessage();
-        }
-        logError($exception);
-    }
+    catch (Exception $exception) { handleException($exception); }
 }
 
 
@@ -439,14 +358,7 @@ function purchaseBook($isbn, $user_id, $price){
 
         return $result;
     }
-    catch (Exception $exception)
-    {
-        if ($GLOBALS ["sqliteDebug"])
-        {
-            return $exception->getMessage();
-        }
-        logError($exception);
-    }
+    catch (Exception $exception) { handleException($exception); }
 
 }
 
@@ -466,17 +378,19 @@ function getAllBooks(){
 			// Add sql row to our final result
 			array_push($allBooks, $row);
 		}
+		header("HTTP/1.1 200 Books Found");
 		return $allBooks;
     }
-    catch (Exception $exception)
-    {
-        if ($GLOBALS ["sqliteDebug"])
+    catch (Exception $exception) { handleException($exception); }
+    
+}
+
+function handleException(Exception $exception){
+	 if ($GLOBALS ["sqliteDebug"])
         {
             return $exception->getMessage();
         }
         logError($exception);
-    }
 }
-
 
 ?>

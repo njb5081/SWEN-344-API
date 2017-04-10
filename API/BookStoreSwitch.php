@@ -23,6 +23,7 @@ function book_store_switch($getFunctions)
 					$aid = findOrCreateAuthor($_POST["f_name"], $_POST["l_name"]);
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("findOrCreatePublisher ~ Required parameters were not submited correctly.");
 					return ("findOrCreatePublisher One or more parameters were not provided");
 				}
@@ -51,6 +52,7 @@ function book_store_switch($getFunctions)
 					//	}
 					}
 				else{
+					header("HTTP/1.1 400");
 					logError("createBook ~ Required parameters were not submited correctly.");
 					return ("createBook One or more parameters were not provided");
 				}
@@ -61,6 +63,10 @@ function book_store_switch($getFunctions)
 					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
 					return $pid;
 				}
+				else{
+					// TODO: handle this error
+					header("HTTP/1.1 400");
+				}
 				
 			case "findOrCreateAuthor":
 				logError("log or create author case");
@@ -69,6 +75,7 @@ function book_store_switch($getFunctions)
 					return $aid;
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("findOrCreateAuthor ~ Required parameters were not submitted correctly.");
 					return ("findOrCreateAuthor One or more parameters were not provided");
 				}
@@ -79,6 +86,7 @@ function book_store_switch($getFunctions)
 					$aid = findOrCreateAuthor($_POST["f_name"], $_POST["l_name"]);
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("updateBook ~ Required parameters were not submited correctly.");
 					return ("updateBook ~ One or more parameters were not provided");
 				}
@@ -101,15 +109,17 @@ function book_store_switch($getFunctions)
 						);
 					}
 				else {
+					header("HTTP/1.1 400");
 					logError("updateBook ~ Required parameters were not submited correctly.");
 					return ("updateBook One or more parameters were not provided");
 				}
 				
 			case "getBook":
 				//if has params
-				if (isset($_GET["isbn"])){
+				if (isset($_GET["isbn"]) && $_GET["isbn"] >= 0){
 					return getBook($_GET["isbn"]);
 				} else {
+					header("HTTP/1.1 400");
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
 				}
@@ -119,6 +129,7 @@ function book_store_switch($getFunctions)
 				if (isset($_GET["section_id"])){
 					return getSectionBooks($_GET["section_id"]);
 				} else {
+					header("HTTP/1.1 400");
 					logError("getBook ~ Required isbn parameter was not submitted correctly.");
 					return ("getBook book isbn parameter was not submitted correctly.");
 				}
@@ -129,6 +140,7 @@ function book_store_switch($getFunctions)
 					return toggleBook($_GET["isbn"], $_GET["available"]);
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("getBook ~ Required isbn and-or available parameter not submitted correctly.");
 					return ("toggleBook isbn and-or available parameter not submitted correctly.");
 				}
@@ -147,6 +159,7 @@ function book_store_switch($getFunctions)
 						$_POST["book_isbn"],
 						$_POST["user_id"]);
 				} else {
+					header("HTTP/1.1 400");
 					logError("createReview ~ Required parameters not submitted correctly.");
 					return ("createReview parameters not submitted correctly.");
 				}
@@ -157,6 +170,7 @@ function book_store_switch($getFunctions)
                     return orderBook($_GET["isbn"], $_GET["amount"]);
                 }
                 else{
+					header("HTTP/1.1 400");
                     logError("orderBook ~ Required isbn and-or amount parameter not submitted correctly.");
                     return ("orderBook isbn and-or amount parameter not submitted correctly.");
                 }
@@ -166,6 +180,7 @@ function book_store_switch($getFunctions)
 					return viewBookReviews($_GET["isbn"]);
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("viewBookReviews ~ Required isbn parameter not submitted correctly.");
                     return ("viewBookReviews isbn parameter not submitted correctly.");
 				}
@@ -174,6 +189,7 @@ function book_store_switch($getFunctions)
 				if(isset($_GET["search_attribute"])){
 					return searchBooks($_GET["search_attribute"], $_GET["search_string"]);
 				} else {
+					header("HTTP/1.1 400");
 					logError("searchBooks ~ Required search_attribute parameter not submitted correctly.");
                     return ("searchBooks search_attribute parameter not submitted correctly.");
 				}
@@ -183,6 +199,7 @@ function book_store_switch($getFunctions)
 					return viewPurchaseHistory($_GET["user_id"]);
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("viewPurchaseHistory ~ Required user_id parameter not submitted correctly.");
                     return ("viewPurchaseHistory user_id parameter not submitted correctly.");
 				}
@@ -192,6 +209,7 @@ function book_store_switch($getFunctions)
 					return purchaseBook($_GET["isbn"], $_GET["user_id"], $_GET["price"]);
 				}
 				else{
+					header("HTTP/1.1 400");
 					logError("purchaseBook ~ Required isbn and/or user_id parameter not submitted correctly.");
 					return ("purchaseBook isbn or user_id parameter not submitted correctly.");
 				}
@@ -200,6 +218,7 @@ function book_store_switch($getFunctions)
 				return getAllBooks();
 			
 			default:
+				header("HTTP/1.1 404");
 				logError("Your query of function: " + $_GET["function"] + " is incorrect.  It may be structured wrong or the function
 					does not exits");
 				return "Your query of function: " + $_GET["function"] + " is incorrect.  It may be structured wrong or the function
