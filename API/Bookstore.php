@@ -57,7 +57,7 @@ function createBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$query->bindParam(':available', $available);
 			$query->bindParam(':count', $count);
 			$result = $query->execute();
-			
+
 			header("HTTP/1.1 201 Book Created");
 			return $result;
 	}
@@ -91,7 +91,7 @@ function findOrCreatePublisher($name, $address, $website){
 
 	}
 	catch (Exception $exception) { handleException($exception); }
-	
+
 	return $pub_id["ID"];
 }
 
@@ -116,7 +116,7 @@ function findOrCreateAuthor($f_name, $l_name){
 			$auth_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
 			$author_id = $auth_query->execute();
 			$auth_id = $author_id->fetchArray();
-			
+
 			return $auth_id["ID"];
 		}
 		else
@@ -134,9 +134,9 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 		{
 			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 			$sqlite->enableExceptions(true);
-			
+
 			$update_book_query = $sqlite->prepare("UPDATE Book SET title=:title, publisher_id=:publisher_id, price=:price, thumbnail_url=:thumbnail_url, available=:available, count=:count WHERE isbn=:isbn");
-			
+
 			$update_book_query->bindParam(':isbn', $isbn);
 			$update_book_query->bindParam(':title', $title);
 			$update_book_query->bindParam(':publisher_id', $publisher_id);
@@ -144,10 +144,10 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$update_book_query->bindParam(':price', $price);
 			$update_book_query->bindParam(':available', $available);
 			$update_book_query->bindParam(':count', $count);
-			
+
 			$result = $update_book_query->execute();
 			//$book_result = $result->fetchArray();
-			
+
 			return $result; //keep in mind that this wont actually return any data since its an update query -Daniel Roberts
 		}
 	catch (Exception $exception) { handleException($exception); }
@@ -166,7 +166,7 @@ function getBook($isbn)
 		//need to get everything out of the dict
 		$result = $book_query->execute();
 		$book_result = $result->fetchArray();
-				
+
 		return $book_result;
 	}
 	catch (Exception $exception) { handleException($exception); }
@@ -236,13 +236,14 @@ function createReview($id, $review, $rating, $book_isbn, $user_id)
 		$query->bindParam(':book_isbn', $book_isbn);
 		$query->bindParam(':user_id', $user_id);
 		$result = $query->execute();
-	
+
 		$all_reviews = array();
-		
+
 		while ($row = $result->fetchArray())
 		{
 			array_push($all_reviews, $row);
 		}
+		header("HTTP/1.1 201 Book Review Created");
 		return $all_reviews;
 
 	}
@@ -303,16 +304,16 @@ function viewPurchaseHistory($user_id)
 
         //prepare query to protect from sql injection
 		// !!TODO: join to get the author
-		$query = $sqlite->prepare("SELECT BookOrder.subtotal, b.title, b.price 
-			FROM BookOrder 
+		$query = $sqlite->prepare("SELECT BookOrder.subtotal, b.title, b.price
+			FROM BookOrder
 			JOIN OrderItem as o on BookOrder.id = o.order_id
-			JOIN Book as b on o.book_isbn=b.isbn  
+			JOIN Book as b on o.book_isbn=b.isbn
 			WHERE BookOrder.user_id=:user_id;");
 		$query->bindParam(':user_id', $user_id);
 		$result = $query->execute();
-		
+
 		$bookOrders = array();
-		
+
 		// get all the rows until none are left to fetch
 		while ( $row = $result->fetchArray() )
 		{
@@ -370,7 +371,7 @@ function getAllBooks(){
 
 		$query = $sqlite->prepare("SELECT * FROM Book;");
 		$result = $query->execute();
-		
+
 		$allBooks = array();
 		// get all the rows until none are left to fetch
 		while ( $row = $result->fetchArray() )
@@ -382,7 +383,7 @@ function getAllBooks(){
 		return $allBooks;
     }
     catch (Exception $exception) { handleException($exception); }
-    
+
 }
 
 function handleException(Exception $exception){
