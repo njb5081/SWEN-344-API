@@ -10,11 +10,17 @@ then
 	fi
 	touch $fileName;
 	sqlite3 $fileName < "GeneralTables.sql";
+
 	sqlite3 $fileName < "TeamCoopEval.sql";
+		
 	sqlite3 $fileName < "TeamBookStore.sql";
+	echo "HH";
 	sqlite3 $fileName < "TeamHumanResources.sql";
+	
 	sqlite3 $fileName < "TeamEnrollment.sql";
+
 	sqlite3 $fileName < "TeamFacilityManagement.sql";
+		
 	sqlite3 $fileName < "TeamGrading.sql";
 fi
 
