@@ -219,35 +219,32 @@ function toggleBook($isbn, $isAvailable)
     }
     catch (Exception $exception) { handleException($exception); }
 }
-function createReview($id, $review, $rating, $book_isbn, $user_id)
+function createReview($review, $rating, $book_isbn, $user_id)
 {
-	logError("createReview ");
+	logError("createReview");
 	try{
 		$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 		$sqlite->enableExceptions(true);
-
+		
 		//prepare query to protect from sql injection
-    $query = $sqlite->prepare("INSERT INTO BookReview (id, review, rating,
-					book_isbn, user_id) VALUES (:id, :review, :rating,
+		$query = $sqlite->prepare("INSERT INTO BookReview (review, rating,
+					book_isbn, user_id) VALUES (:review, :rating,
 					:book_isbn, :user_id)");
-		$query->bindParam(':id', $id);
 		$query->bindParam(':review', $review);
 		$query->bindParam(':rating', $rating);
 		$query->bindParam(':book_isbn', $book_isbn);
 		$query->bindParam(':user_id', $user_id);
+		
 		$result = $query->execute();
-
-		$all_reviews = array();
-
-		while ($row = $result->fetchArray())
-		{
-			array_push($all_reviews, $row);
-		}
+		
 		header("HTTP/1.1 201 Book Review Created");
-		return $all_reviews;
-
+		
+		
+		return $result;
 	}
-	catch (Exception $exception) { handleException($exception); }
+	catch (Exception $exception) { 
+		handleException($exception); 
+	}
 }
 
 function orderBook($isbn, $amount)
@@ -387,6 +384,7 @@ function getAllBooks(){
 }
 
 function handleException(Exception $exception){
+	 return $exception->getMessage();
 	 if ($GLOBALS ["sqliteDebug"])
         {
             return $exception->getMessage();

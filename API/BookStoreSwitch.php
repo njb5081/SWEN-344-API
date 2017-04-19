@@ -146,14 +146,12 @@ function book_store_switch($getFunctions)
 				}
 				
 			case "createReview":
-				if (isset($_POST["id"]) &&
-					isset($_POST["review"]) &&
+				if (isset($_POST["review"]) &&
 					isset($_POST["rating"]) &&
 					isset($_POST["book_isbn"]) &&
 					isset($_POST["user_id"]))
 					{
 					return createReview(
-						$_POST["id"],
 						$_POST["review"],
 						$_POST["rating"],
 						$_POST["book_isbn"],
