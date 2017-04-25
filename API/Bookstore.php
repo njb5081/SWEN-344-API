@@ -116,12 +116,13 @@ function findOrCreateAuthor($f_name, $l_name){
 			$auth_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
 			$author_id = $auth_query->execute();
 			$auth_id = $author_id->fetchArray();
-
+			header("HTTP/1.1 201 Author Created");
 			return $auth_id["ID"];
 		}
 		else
 		{
-			return NULL;
+			header("HTTP/1.1 201 Author Found");
+			return $auth_id["ID"];
 		}
 	}
 	catch (Exception $exception) { handleException($exception); }
@@ -283,10 +284,18 @@ function viewBookReviews($isbn){
 		$query = $sqlite->prepare("Select * from BookReview where book_isbn=:isbn;");
 		$query->bindParam(':isbn', $isbn);
 		$result = $query->execute();
-		$review = $result->fetchArray();
+		
+		$reviews = array();
 
+		// get all the rows until none are left to fetch
+		while ( $row = $result->fetchArray() )
+		{
+			// Add sql row to our final result
+			array_push($reviews, $row);
+		}
+		
 		header("HTTP/1.1 200");
-        return $review;
+        return $reviews;
     }
     catch (Exception $exception) { handleException($exception); }
 
