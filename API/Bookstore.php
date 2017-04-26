@@ -393,10 +393,11 @@ function getAllBooks(){
 }
 
 function handleException(Exception $exception){
-	 return $exception->getMessage();
 	 if ($GLOBALS ["sqliteDebug"])
         {
-            return $exception->getMessage();
+        
+          header("HTTP/1.1 400 Exception Occured");  
+ 	  return $exception->getMessage();
         }
         logError($exception);
 }
