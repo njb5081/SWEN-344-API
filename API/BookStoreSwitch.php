@@ -6,7 +6,7 @@ function book_store_switch($getFunctions)
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
 		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview", 
-		"viewPurchaseHistory", "purchaseBook", "getAllBooks", "getAllAuthors");
+		"viewPurchaseHistory", "purchaseBook", "getAllBooks");
 
 	if ($getFunctions)
 	{
@@ -81,15 +81,6 @@ function book_store_switch($getFunctions)
 				}
 				
 			case "updateBook":
-				if (isset($_POST["publisher_name"])){
-					$pid = findOrCreatePublisher($_POST["publisher_name"], $_POST["address"], $_POST["website"]);
-					$aid = findOrCreateAuthor($_POST["f_name"], $_POST["l_name"]);
-				}
-				else{
-					header("HTTP/1.1 400");
-					logError("updateBook ~ Required parameters were not submited correctly.");
-					return ("updateBook ~ One or more parameters were not provided");
-				}
 				if (isset($_POST["isbn"]) &&
 					isset($_POST["title"]) &&
 					isset($_POST["price"]) &&
@@ -101,7 +92,6 @@ function book_store_switch($getFunctions)
 					return updateBook(
 						$_POST["isbn"],
 						$_POST["title"],
-						$pid,
 						$_POST["price"],
 						$_POST["thumbnail_url"],
 						$_POST["available"],
@@ -214,8 +204,6 @@ function book_store_switch($getFunctions)
 				
 			case "getAllBooks":
 				return getAllBooks();
-			case "getAllAuthors":
-				return getAllAuthors();
 			
 			default:
 				header("HTTP/1.1 404");

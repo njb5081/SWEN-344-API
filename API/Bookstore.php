@@ -130,7 +130,8 @@ function findOrCreateAuthor($f_name, $l_name){
 	catch (Exception $exception) { handleException($exception); }
 }
 
-function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $available, $count)
+/* DOES NOT UPDATE PUBLISHER, WE will not provide that functionality -njb */
+function updateBook($isbn, $title, $price, $thumbnail_url, $available, $count)
 {
 	logError("updateBook ");
 	try
@@ -138,11 +139,10 @@ function updateBook($isbn, $title, $publisher_id, $price, $thumbnail_url, $avail
 			$sqlite = new SQLite3($GLOBALS["databaseFile"]);
 			$sqlite->enableExceptions(true);
 
-			$update_book_query = $sqlite->prepare("UPDATE Book SET title=:title, publisher_id=:publisher_id, price=:price, thumbnail_url=:thumbnail_url, available=:available, count=:count WHERE isbn=:isbn");
+			$update_book_query = $sqlite->prepare("UPDATE Book SET title=:title, price=:price, thumbnail_url=:thumbnail_url, available=:available, count=:count WHERE isbn=:isbn");
 
 			$update_book_query->bindParam(':isbn', $isbn);
-			$update_book_query->bindParam(':title', $title);
-			$update_book_query->bindParam(':publisher_id', $publisher_id);
+			$update_book_query->bindParam(':title', $title);			
 			$update_book_query->bindParam(':thumbnail_url', $thumbnail_url);
 			$update_book_query->bindParam(':price', $price);
 			$update_book_query->bindParam(':available', $available);
@@ -393,30 +393,6 @@ function getAllBooks(){
     catch (Exception $exception) { handleException($exception); }
 
 }
-
-function getAllAuthors(){
-	try
-	{
-		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
-		$sqlite->enableExceptions(true);
-
-		$query = $sqlite->prepare("SELECT * FROM Author;");
-		$result = $query->execute();
-
-		$allAuthors = array();
-		// get all the rows until none are left to fetch
-		while ( $row = $result->fetchArray() )
-		{
-			// Add sql row to our final result
-			array_push($allAuthors, $row);
-		}
-		header("HTTP/1.1 200 Books Found");
-		return $allAuthors;
-    }
-    catch (Exception $exception) { handleException($exception); }
-
-}
-
 
 function handleException(Exception $exception){
 	 if ($GLOBALS ["sqliteDebug"])
