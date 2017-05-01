@@ -114,6 +114,8 @@ function findOrCreateAuthor($f_name, $l_name){
 			$auth_query->bindParam(':l_name', $l_name);
 			$auth_query->execute();
 			$auth_query = $sqlite->prepare("Select id from author where first_name=:f_name and last_name=:l_name;");
+			$auth_query->bindParam(':f_name', $f_name);
+			$auth_query->bindParam(':l_name', $l_name);	
 			$author_id = $auth_query->execute();
 			$auth_id = $author_id->fetchArray();
 			header("HTTP/1.1 201 Author Created");
@@ -211,11 +213,11 @@ function toggleBook($isbn, $isAvailable)
         //prepare query to protect from sql injection
         $query = $sqlite->prepare("UPDATE Book SET available = :newState
                   WHERE isbn= :isbn");
-
+		
         $query->bindParam(':isbn', $isbn);
         $query->bindParam(':newState', $newState);
-        $result = $query->execute();
-
+		$result = $query->execute();
+		
         return $result;
     }
     catch (Exception $exception) { handleException($exception); }
