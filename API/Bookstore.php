@@ -392,6 +392,30 @@ function getAllBooks(){
 
 }
 
+function getAllAuthors(){
+	try
+	{
+		$sqlite = new SQLite3($GLOBALS ["databaseFile"]);
+		$sqlite->enableExceptions(true);
+
+		$query = $sqlite->prepare("SELECT * FROM Author;");
+		$result = $query->execute();
+
+		$allAuthors = array();
+		// get all the rows until none are left to fetch
+		while ( $row = $result->fetchArray() )
+		{
+			// Add sql row to our final result
+			array_push($allAuthors, $row);
+		}
+		header("HTTP/1.1 200 Books Found");
+		return $allAuthors;
+    }
+    catch (Exception $exception) { handleException($exception); }
+
+}
+
+
 function handleException(Exception $exception){
 	 if ($GLOBALS ["sqliteDebug"])
         {

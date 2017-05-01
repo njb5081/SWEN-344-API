@@ -6,7 +6,7 @@ function book_store_switch($getFunctions)
 	// Define the possible Book Store function URLs which the page can be accessed from
 	$possible_function_url = array("getBook", "getSectionBooks", "createBook", "findOrCreatePublisher", "toggleBook",
 		"orderBook", "findOrCreateAuthor", "viewBookReviews", "updateBook", "searchBooks", "createReview", 
-		"viewPurchaseHistory", "purchaseBook", "getAllBooks");
+		"viewPurchaseHistory", "purchaseBook", "getAllBooks", "getAllAuthors");
 
 	if ($getFunctions)
 	{
@@ -214,6 +214,8 @@ function book_store_switch($getFunctions)
 				
 			case "getAllBooks":
 				return getAllBooks();
+			case "getAllAuthors":
+				return getAllAuthors();
 			
 			default:
 				header("HTTP/1.1 404");
